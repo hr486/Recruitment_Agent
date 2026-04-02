@@ -24,7 +24,8 @@ function App() {
     // Poll for Gmail connection status
     const checkGmail = async () => {
       try {
-        const res = await fetch('http://localhost:8000/auth/gmail/status?company_id=default_company');
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const res = await fetch(`${baseUrl}/auth/gmail/status?company_id=default_company`);
         const data = await res.json();
         setGmailConnected(data.connected);
       } catch (e) {
@@ -54,12 +55,14 @@ function App() {
     };
   }, []);
   const connectGmail = () => {
-    window.open("http://localhost:8000/auth/gmail/start?company_id=default_company", "Gmail Connect", "width=600,height=700");
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    window.open(`${baseUrl}/auth/gmail/start?company_id=default_company`, "Gmail Connect", "width=600,height=700");
   };
 
   const disconnectGmail = async () => {
     try {
-      const res = await fetch('http://localhost:8000/auth/gmail/disconnect?company_id=default_company', {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const res = await fetch(`${baseUrl}/auth/gmail/disconnect?company_id=default_company`, {
         method: 'POST'
       });
       if (!res.ok) throw new Error('Failed to disconnect Gmail');
@@ -96,13 +99,13 @@ function App() {
 
   const navItems = [
     { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
-    { key: 'jd', label: 'Generate JD', icon: <FileText size={20} /> },
-    { key: 'screening', label: 'Screen Resumes', icon: <UploadCloud size={20} /> },
-    { key: 'aptitude', label: 'Aptitude & Coding', icon: <Code size={20} /> },
+    { key: 'jd', label: 'Job Descriptions', icon: <FileText size={20} /> },
+    { key: 'screening', label: 'Resume Screening', icon: <UploadCloud size={20} /> },
+    { key: 'aptitude', label: 'Assessments', icon: <Code size={20} /> },
     { key: 'schedule_test', label: 'Schedule Tests', icon: <CalendarClock size={20} /> },
-    { key: 'analyse', label: 'Analyse Results', icon: <BarChart3 size={20} /> },
+    { key: 'analyse', label: 'Results Analysis', icon: <BarChart3 size={20} /> },
     { key: 'interviews', label: 'Interviews', icon: <CalendarCheck size={20} /> },
-    { key: 'joined', label: 'Joined', icon: <PartyPopper size={20} /> },
+    { key: 'joined', label: 'Hired Candidates', icon: <PartyPopper size={20} /> },
   ];
 
   return (
@@ -112,10 +115,10 @@ function App() {
 
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <div className="logo-icon">AI</div>
+          <div className="logo-icon">BA</div>
           <div>
-            <h2 style={{ fontSize: '1.2rem', margin: 0, fontWeight: 700 }}>RecruitAI</h2>
-            <p style={{ fontSize: '0.75rem', margin: 0 }}>Hiring System V2</p>
+            <h2 style={{ fontSize: '1.2rem', margin: 0, fontWeight: 700 }}>Botivate</h2>
+            <p style={{ fontSize: '0.75rem', margin: 0 }}>RecruitAgent</p>
           </div>
         </div>
         

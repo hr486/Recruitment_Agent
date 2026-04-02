@@ -13,7 +13,7 @@ const ScheduledInterviews = ({ navigateTo }) => {
   const [selectedCandidateModal, setSelectedCandidateModal] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8000/jd/all')
+    fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/jd/all`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success') {
@@ -24,7 +24,7 @@ const ScheduledInterviews = ({ navigateTo }) => {
 
   useEffect(() => {
     if (!selectedJd) return;
-    fetch(`http://localhost:8000/jd/${selectedJd}/detail`)
+    fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/jd/${selectedJd}/detail`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success') {
@@ -50,7 +50,7 @@ const ScheduledInterviews = ({ navigateTo }) => {
     const jdData = jds.find(j => j.jd_id === selectedJd);
 
     try {
-      await fetch(`http://localhost:8000/jd/${selectedJd}/confirm_hired`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/jd/${selectedJd}/confirm_hired`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

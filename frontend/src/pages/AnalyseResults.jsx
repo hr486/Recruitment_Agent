@@ -20,7 +20,7 @@ const AnalyseResults = ({ navigateTo }) => {
   const [selectedCandidateModal, setSelectedCandidateModal] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8000/jd/all')
+    fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/jd/all`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success') {
@@ -31,7 +31,7 @@ const AnalyseResults = ({ navigateTo }) => {
 
   useEffect(() => {
     if (!selectedJd) return;
-    fetch(`http://localhost:8000/jd/${selectedJd}/detail`)
+    fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/jd/${selectedJd}/detail`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success') {
@@ -61,7 +61,7 @@ const AnalyseResults = ({ navigateTo }) => {
         }
       });
     // Fetch test answers
-    fetch(`http://localhost:8000/jd/${selectedJd}/candidates`)
+    fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/jd/${selectedJd}/candidates`)
       .then(res => res.json())
       .then(() => {
         // Also fetch test answers from the detail endpoint (already included)
@@ -72,7 +72,7 @@ const AnalyseResults = ({ navigateTo }) => {
   const fetchAnswerKey = async (email) => {
     if (showAnswerKey === email) { setShowAnswerKey(null); return; }
     try {
-      const resp = await fetch(`http://localhost:8000/test/answers/${selectedJd}/${email}`);
+      const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/test/answers/${selectedJd}/${email}`);
       const data = await resp.json();
       
       const answers = [];
@@ -102,7 +102,7 @@ const AnalyseResults = ({ navigateTo }) => {
     const jdData = jds.find(j => j.jd_id === selectedJd);
     
     try {
-      await fetch(`http://localhost:8000/jd/${selectedJd}/schedule_interview`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/jd/${selectedJd}/schedule_interview`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

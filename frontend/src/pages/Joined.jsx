@@ -12,7 +12,7 @@ const Joined = () => {
 
   useEffect(() => {
     // Fetch all JDs for filter
-    fetch('http://localhost:8000/jd/all')
+    fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/jd/all`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success') {
@@ -21,7 +21,7 @@ const Joined = () => {
       });
 
     // Fetch all joined candidates
-    fetch('http://localhost:8000/jd/joined/all')
+    fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/jd/joined/all`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success') {

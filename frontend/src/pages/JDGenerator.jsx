@@ -27,7 +27,7 @@ const JDGenerator = ({ navigateTo }) => {
     setLoading(true);
     
     try {
-      const response = await fetch('http://localhost:8000/jd/create', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/jd/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -116,7 +116,7 @@ const JDGenerator = ({ navigateTo }) => {
           </div>
           
           <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '20px' }} disabled={loading}>
-            {loading ? <span className="spinner"></span> : "Synthesize AI Specification"}
+            {loading ? <span className="spinner"></span> : "Generate Job Description"}
           </button>
         </form>
       </div>
@@ -132,7 +132,7 @@ const JDGenerator = ({ navigateTo }) => {
           {loading ? (
             <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
               <div className="spinner" style={{ marginBottom: '16px' }}></div>
-              <p>LLM is formulating ATS-friendly JD structure...</p>
+              <p>Generating professional job description...</p>
             </div>
           ) : generatedJD ? (
             <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'Inter', fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: 1.6 }}>

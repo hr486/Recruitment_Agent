@@ -10,7 +10,7 @@ const Dashboard = ({ navigateTo }) => {
   useEffect(() => {
     const fetchJds = async () => {
       try {
-        const response = await fetch('http://localhost:8000/jd/all');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/jd/all`);
         const data = await response.json();
         if (data.status === 'success') {
           setJds(data.jds);
@@ -222,52 +222,53 @@ const Dashboard = ({ navigateTo }) => {
             <div style={{ padding: '20px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
                {selectedJdModal.state === 'JD_CREATED' ? (
                  <>
-                   <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>This Job Description is ready. Start screening candidate resumes now.</p>
-                   <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('screening'); }} style={{ width: '100%' }}>Screen Resumes for {selectedJdModal.title}</button>
+                   <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>This Job Description is ready for screening. Select candidates to begin the evaluation process.</p>
+                   <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('screening'); }} style={{ width: '100%' }}>Start Resume Screening</button>
                  </>
                ) : selectedJdModal.state === 'SCREENING_COMPLETE' ? (
                  <>
-                   <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>Screening complete. Generate aptitude & coding tests for shortlisted candidates.</p>
-                   <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('aptitude'); }} style={{ width: '100%' }}>Generate Aptitude Test for {selectedJdModal.title}</button>
+                   <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>Screening complete. Create assessments and coding tests for shortlisted candidates.</p>
+                   <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('aptitude'); }} style={{ width: '100%' }}>Create Assessments</button>
                  </>
                ) : selectedJdModal.state === 'APTITUDE_GENERATED' ? (
                  <>
-                   <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>Test generated. Schedule and send test links to candidates.</p>
-                   <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('schedule_test'); }} style={{ width: '100%' }}>Schedule Tests for {selectedJdModal.title}</button>
+                   <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>Assessments created. Schedule and send test links to candidates.</p>
+                   <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('schedule_test'); }} style={{ width: '100%' }}>Send Assessments to Candidates</button>
                  </>
                ) : ['TEST_SCHEDULED', 'TEST_SENT'].includes(selectedJdModal.state) ? (
                  <>
-                   <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>Tests are sent. Wait for submissions, then analyse results.</p>
-                   <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('schedule_test'); }} style={{ width: '100%' }}>View Test Status</button>
+                   <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>Assessments sent to candidates. Wait for submissions, then review results.</p>
+                   <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('schedule_test'); }} style={{ width: '100%' }}>View Assessment Status</button>
                  </>
                ) : selectedJdModal.state === 'TEST_COMPLETED' || selectedJdModal.state === 'RESULTS_ANALYSED' ? (
                  <>
-                   <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>Results are in. Analyse performance and select finalists for interview.</p>
-                   <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('analyse'); }} style={{ width: '100%', background: 'var(--accent)' }}>Analyse Results & Select Finalists</button>
+                   <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>Results are ready. Review candidate performance and shortlist finalists for interviews.</p>
+                   <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('analyse'); }} style={{ width: '100%', background: 'var(--accent)' }}>Review Results & Select Finalists</button>
                  </>
                ) : selectedJdModal.state === 'INTERVIEW_SCHEDULED' ? (
                   <>
-                    <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>Interviews scheduled. Conduct interviews and mark candidates as hired.</p>
+                    <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>Interviews scheduled. Conduct interviews and record hiring decisions.</p>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                      <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('interviews'); }} style={{ flex: 2, background: 'var(--success)' }}>View Interviews & Hire</button>
+                      <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('interviews'); }} style={{ flex: 2, background: 'var(--success)' }}>Manage Interviews</button>
                       <button className="btn btn-outline" onClick={async () => {
-                         if(window.confirm("Are you sure you want to CLOSE this campaign without hiring anyone?")) {
+                         if(window.confirm("Close this campaign without hiring?")) {
                             try {
-                              const res = await fetch(`http://localhost:8000/jd/${selectedJdModal.jd_id}/close_campaign`, { method: 'POST' });
+                              const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                              const res = await fetch(`${baseUrl}/jd/${selectedJdModal.jd_id}/close_campaign`, { method: 'POST' });
                               if(res.ok) setSelectedJdModal(null);
-                            } catch(e) { alert("Failed to close."); }
+                            } catch(e) { alert("Failed to close campaign."); }
                          }
                       }} style={{ flex: 1, color: 'var(--danger)', borderColor: 'var(--danger)' }}>Close Campaign</button>
                     </div>
                   </>
                ) : selectedJdModal.state === 'HIRED' ? (
                  <>
-                   <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>🎉 Pipeline complete! Candidates have been hired successfully.</p>
-                   <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('joined'); }} style={{ width: '100%', background: 'var(--success)' }}>View Joined Candidates</button>
+                   <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>Hiring complete! Selected candidates have been marked as hired successfully.</p>
+                   <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('joined'); }} style={{ width: '100%', background: 'var(--success)' }}>View Hired Candidates</button>
                  </>
                ) : selectedJdModal.state === 'CLOSED' ? (
                   <>
-                    <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>📁 This campaign has been CLOSED without finding a suitable hire.</p>
+                    <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>This campaign has been closed. No suitable candidates were selected during this hiring cycle.</p>
                     <button className="btn btn-outline" onClick={() => setSelectedJdModal(null)} style={{ width: '100%' }}>Back to Dashboard</button>
                   </>
                ) : (

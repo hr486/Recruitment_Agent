@@ -38,7 +38,8 @@ const AptitudeTest = ({ navigateTo }) => {
   const [showCodingSection, setShowCodingSection] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:8000/jd/all')
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    fetch(`${baseUrl}/jd/all`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success') {
@@ -49,14 +50,15 @@ const AptitudeTest = ({ navigateTo }) => {
 
   useEffect(() => {
     if (!selectedJd) return;
-    fetch(`http://localhost:8000/jd/${selectedJd}/candidates?status=Shortlisted`)
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    fetch(`${baseUrl}/jd/${selectedJd}/candidates?status=Shortlisted`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success') setCandidates(data.candidates);
       });
 
     // Get JD details for company name
-    fetch(`http://localhost:8000/jd/${selectedJd}/detail`)
+    fetch(`${baseUrl}/jd/${selectedJd}/detail`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success') setJdDetail(data.jd);
@@ -71,7 +73,7 @@ const AptitudeTest = ({ navigateTo }) => {
     setGeneratedTest(null);
     setSaved(false);
     try {
-      const resp = await fetch('http://localhost:8000/test/generate', {
+      const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/test/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -119,7 +121,7 @@ const AptitudeTest = ({ navigateTo }) => {
 
     try {
       const jdData = jds.find(j => j.jd_id === selectedJd);
-      const resp = await fetch('http://localhost:8000/test/save-test', {
+      const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/test/save-test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

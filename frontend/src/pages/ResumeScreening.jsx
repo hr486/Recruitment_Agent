@@ -43,7 +43,8 @@ const ResumeScreening = ({ navigateTo }) => {
 
   useEffect(() => {
     // Fetch available JDs
-    fetch('http://localhost:8000/jd/all')
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    fetch(`${baseUrl}/jd/all`)
       .then(res => res.json())
       .then(data => {
         if(data.status === 'success' && data.jds.length > 0) {
@@ -53,7 +54,8 @@ const ResumeScreening = ({ navigateTo }) => {
       
     // Gmail Auth Status Logic
     const fetchGmailStatus = () => {
-      fetch('http://localhost:8000/auth/gmail/status')
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      fetch(`${baseUrl}/auth/gmail/status`)
         .then(res => res.json())
         .then(data => setGmailStatus(data))
         .catch(err => console.error(err));
