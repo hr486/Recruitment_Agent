@@ -112,7 +112,8 @@ const CandidateProfileModal = ({ candidate, onClose, jdId }) => {
           </div>
 
           {/* Main Content Area */}
-            
+          <div className="modal-main-content" style={{ flex: 1, overflowY: 'auto', padding: '32px', background: 'var(--bg-dark)' }}>
+
             {/* TAB 1: RESUME */}
             {activeTab === 'resume' && (
               <div className="animate-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
