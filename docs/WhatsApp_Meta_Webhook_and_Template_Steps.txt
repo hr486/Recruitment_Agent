@@ -1,0 +1,113 @@
+RecruitAI WhatsApp Setup Guide
+
+Part 1: Configure Webhook in Meta
+
+Step 4.1: Configure Webhook
+
+1. Open Meta Developer Dashboard and sign in with the account that owns your WhatsApp app.
+2. Select your app.
+3. Go to Settings -> Webhooks. In some Meta layouts, this may appear under the WhatsApp product or API section.
+4. Click Configure webhooks.
+5. In the Callback URL field, paste the correct backend webhook URL.
+
+   Local testing callback URL:
+   http://localhost:8000/test/whatsapp/webhook
+
+   Hugging Face deployment callback URL:
+   https://acemark01-recruitai-backend.hf.space/test/whatsapp/webhook
+
+6. In the Verify Token field, enter this exact value:
+
+   RecruitAI_WA_Verify_2026_4f9cA72dPqL8xM3v
+
+7. Click Verify and Save.
+8. If verification fails, check the following:
+   - The backend is running and reachable.
+   - The webhook route exists at /test/whatsapp/webhook.
+   - The verify token in Meta matches the WHATSAPP_WEBHOOK_VERIFY_TOKEN environment variable.
+   - If you are testing locally, the local backend must be accessible from Meta only if you expose it through a tunnel or public URL.
+
+Step 4.2: Subscribe to Events
+
+1. After the webhook is verified, open Subscribe to webhook fields.
+2. Enable message_status.
+3. Click Save.
+4. This field is needed so your backend can receive Delivered, Read, and Failed updates for messages.
+
+Part 2: Create WhatsApp Message Template
+
+Why templates are required
+
+Meta requires bulk or outbound WhatsApp messages to use pre-approved templates. RecruitAI uses a utility template with six variables.
+
+Template variables
+
+1. {{1}} -> Aanya Sharma
+2. {{2}} -> Web Developer
+3. {{3}} -> 04 Apr 2026, 10:30 AM
+4. {{4}} -> 60
+5. {{5}} -> https://recruitai.example.com/tests/abc123
+6. {{6}} -> AceMark
+
+Step 2.1: Create Template in Meta Manager
+
+1. Go to Settings -> Message Templates.
+2. Click Create template.
+3. Fill in the template details exactly as follows:
+
+   Template Name: assessment_invite_v1
+   Category: UTILITY
+   Language: English
+
+4. Use this body text:
+
+   Hello {{1}},
+
+   You're invited to take the {{2}} assessment at {{3}}.
+
+   Duration: {{4}} minutes
+
+   Start your assessment here:
+   {{5}}
+
+   Company: {{6}}
+
+   Good luck!
+
+5. Submit the template for approval.
+6. Utility templates are usually approved quickly, but Meta may show a pending state first.
+
+Step 2.2: Verify Template Parameters
+
+1. Open the Message Templates list.
+2. Click assessment_invite_v1.
+3. Confirm that all six parameters are present.
+4. Confirm the language code is en.
+5. Do not use en_US if the backend code expects en.
+
+Real example values for a live message
+
+If RecruitAI sends a test invite, the template might render like this:
+
+Hello Aanya Sharma,
+
+You're invited to take the Senior React Developer assessment at 04 Apr 2026, 10:30 AM.
+
+Duration: 45 minutes
+
+Start your assessment here:
+https://recruitai.example.com/tests/abc123
+
+Company: Acme Innovations
+
+Good luck!
+
+Environment variable reminder
+
+Set this value in your backend environment:
+
+WHATSAPP_WEBHOOK_VERIFY_TOKEN=RecruitAI_WA_Verify_2026_4f9cA72dPqL8xM3v
+
+Webhook callback URI to use in Meta
+
+https://acemark01-recruitai-backend.hf.space/test/whatsapp/webhook

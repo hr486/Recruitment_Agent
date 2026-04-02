@@ -3,15 +3,15 @@ import { PenTool, CheckCircle, Copy, ArrowRight } from 'lucide-react';
 
 const JDGenerator = ({ navigateTo }) => {
   const [formData, setFormData] = useState({
-    companyName: 'Tech Innovators',
-    companyType: 'Product Based',
-    industry: 'Software Development',
-    location: 'Bangalore, Hybrid',
-    roleTitle: 'Senior React Developer',
-    experience: '4-6 Years',
-    employmentType: 'Full Time',
-    workMode: 'Hybrid',
-    salary: '25-30'
+    companyName: '',
+    companyType: '',
+    industry: '',
+    location: '',
+    roleTitle: '',
+    experience: '',
+    employmentType: '',
+    workMode: '',
+    salary: ''
   });
   
   const [loading, setLoading] = useState(false);
@@ -98,6 +98,7 @@ const JDGenerator = ({ navigateTo }) => {
             <div className="form-group">
               <label className="form-label">Employment Type</label>
               <select name="employmentType" className="form-control" value={formData.employmentType} onChange={handleChange}>
+                <option value="" disabled>Select employment type</option>
                 <option value="Full Time">Full Time</option>
                 <option value="Contract">Contract</option>
                 <option value="Internship">Internship</option>
@@ -106,6 +107,7 @@ const JDGenerator = ({ navigateTo }) => {
             <div className="form-group">
               <label className="form-label">Work Mode</label>
               <select name="workMode" className="form-control" value={formData.workMode} onChange={handleChange}>
+                <option value="" disabled>Select work mode</option>
                 <option value="Hybrid">Hybrid</option>
                 <option value="Remote">Remote</option>
                 <option value="On-Site">On-Site</option>
