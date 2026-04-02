@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, FileCheck, Target, TrendingUp, RefreshCw } from 'lucide-react';
-import { sortJdsNewestFirst } from '../utils/jdDropdown';
+import { sortJdsNewestFirst, formatCreatedTimestamp } from '../utils/jdDropdown';
 
 const Dashboard = ({ navigateTo }) => {
   const [jds, setJds] = useState([]);
@@ -126,7 +126,7 @@ const Dashboard = ({ navigateTo }) => {
                         {(jd?.state || 'UNKNOWN').replace(/_/g, ' ')}
                       </span>
                     </td>
-                    <td data-label="Created" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{jd.created_at || '—'}</td>
+                    <td data-label="Created" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{formatCreatedTimestamp(jd.created_at)}</td>
                     <td data-label="Total CVs" style={{ fontWeight: 600 }}>{jd.candidate_count}</td>
                     <td data-label="Selected" style={{ color: 'var(--success)', fontWeight: 600 }}>{jd.selected_count}</td>
                   </tr>
@@ -204,7 +204,7 @@ const Dashboard = ({ navigateTo }) => {
                    {(selectedJdModal?.state || 'UNKNOWN').replace(/_/g, ' ')}
                  </span>
                  {selectedJdModal?.created_at && (
-                   <p style={{ margin: '12px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>📅 Created: {selectedJdModal.created_at}</p>
+                   <p style={{ margin: '12px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>📅 Created: {formatCreatedTimestamp(selectedJdModal.created_at)}</p>
                  )}
               </div>
               <div style={{ background: 'var(--bg-input)', padding: '20px', borderRadius: '8px', display: 'flex', justifyContent: 'space-around', textAlign: 'center' }}>

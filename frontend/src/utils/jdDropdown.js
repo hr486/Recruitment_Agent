@@ -15,16 +15,43 @@ const getCreatedRaw = (jd) => {
   );
 };
 
-const formatCreatedDate = (rawValue) => {
-  if (!rawValue) return 'N/A';
-  const parsed = new Date(rawValue);
-  if (Number.isNaN(parsed.getTime())) {
-    return rawValue.toString().slice(0, 10);
+const parseCreatedTimestamp = (rawValue) => {
+  if (!rawValue) return null;
+  const text = rawValue.toString().trim();
+
+  const isoParsed = new Date(text);
+  if (!Number.isNaN(isoParsed.getTime())) return isoParsed;
+
+  const ddmmyyyyMatch = text.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:[\sT](\d{2}):(\d{2}):(\d{2}))?$/);
+  if (ddmmyyyyMatch) {
+    const [, day, month, year, hour = '00', minute = '00', second = '00'] = ddmmyyyyMatch;
+    return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second)));
   }
+
+  return null;
+};
+
+const formatCreatedDate = (rawValue) => {
+  const parsed = parseCreatedTimestamp(rawValue);
+  if (!parsed) return 'N/A';
   return parsed.toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric'
+  });
+};
+
+export const formatCreatedTimestamp = (rawValue) => {
+  const parsed = parseCreatedTimestamp(rawValue);
+  if (!parsed) return rawValue ? rawValue.toString() : 'N/A';
+  return parsed.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
   });
 };
 
@@ -35,13 +62,8 @@ const shorten = (value, maxLength = 26) => {
 
 const getCreatedSortValue = (jd) => {
   const rawValue = getCreatedRaw(jd);
-  const parsed = rawValue ? new Date(rawValue) : null;
-  if (parsed && !Number.isNaN(parsed.getTime())) {
-    return parsed.getTime();
-  }
-
-  const fallbackText = rawValue ? rawValue.toString() : '';
-  return fallbackText ? Date.parse(fallbackText) || 0 : 0;
+  const parsed = parseCreatedTimestamp(rawValue);
+  return parsed && !Number.isNaN(parsed.getTime()) ? parsed.getTime() : 0;
 };
 
 export const buildJdDropdownOption = (jd, config = {}) => {

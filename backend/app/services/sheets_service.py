@@ -151,8 +151,8 @@ class SheetsDatabaseService:
 
     def save_jd(self, jd_id: str, title: str, company: str, state: str, text: str):
         """Save a new JD to the JDs sheet."""
-        from datetime import datetime
-        now_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        from datetime import datetime, timezone
+        now_str = datetime.now(timezone.utc).isoformat(timespec="seconds")
         self._append_row("JDs", [jd_id, title, company, state, text[:5000], now_str])
 
     def update_jd_state(self, jd_id: str, new_state: str):

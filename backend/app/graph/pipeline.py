@@ -96,8 +96,8 @@ def sync_all_from_sheets():
 
 def create_pipeline(jd_id: str, jd_text: str, jd_title: str, company_name: str, created_at: Optional[str] = None) -> HiringPipelineState:
     """Create a new hiring pipeline for a JD."""
-    from datetime import datetime
-    _now = created_at or datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    from datetime import datetime, timezone
+    _now = created_at or datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     state = HiringPipelineState(
         jd_id=jd_id,
