@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CalendarCheck, MapPin, Clock, UserCheck, CheckCircle2, User } from 'lucide-react';
 import CandidateProfileModal from '../components/CandidateProfileModal';
 import ResponsiveDropdown from '../components/ResponsiveDropdown';
+import { buildJdDropdownOption } from '../utils/jdDropdown';
 
 const ScheduledInterviews = ({ navigateTo }) => {
   const [jds, setJds] = useState([]);
@@ -87,11 +88,7 @@ const ScheduledInterviews = ({ navigateTo }) => {
 
   const campaignOptions = [
     { value: '', label: '-- Select JD with scheduled interviews --' },
-    ...jds.map((jd) => ({
-      value: jd.jd_id,
-      label: `${jd.title} (${jd.jd_id})`,
-      fullLabel: `${jd.title} (${jd.jd_id}) - ${jd.state?.replace(/_/g, ' ') || ''}`
-    }))
+    ...jds.map((jd) => buildJdDropdownOption(jd))
   ];
 
   return (

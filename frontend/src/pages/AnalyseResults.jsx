@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BarChart3, Eye, CheckSquare, FileText, ShieldAlert, Award, CheckCircle, XCircle, EyeOff, User } from 'lucide-react';
 import CandidateProfileModal from '../components/CandidateProfileModal';
 import ResponsiveDropdown from '../components/ResponsiveDropdown';
+import { buildJdDropdownOption } from '../utils/jdDropdown';
 
 const AnalyseResults = ({ navigateTo }) => {
   const [jds, setJds] = useState([]);
@@ -133,11 +134,7 @@ const AnalyseResults = ({ navigateTo }) => {
 
   const campaignOptions = [
     { value: '', label: '-- Select JD with test results --' },
-    ...jds.map((jd) => ({
-      value: jd.jd_id,
-      label: `${jd.title} (${jd.jd_id})`,
-      fullLabel: `${jd.title} (${jd.jd_id})`
-    }))
+    ...jds.map((jd) => buildJdDropdownOption(jd))
   ];
 
   return (

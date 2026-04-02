@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UploadCloud, Link as LinkIcon, BriefcaseIcon, Play, AlertCircle, FileText, Code } from 'lucide-react';
 import ResponsiveDropdown from '../components/ResponsiveDropdown';
+import { buildJdDropdownOption } from '../utils/jdDropdown';
 
 const ResumeScreening = ({ navigateTo }) => {
   const [jds, setJds] = useState([]);
@@ -164,11 +165,7 @@ const ResumeScreening = ({ navigateTo }) => {
 
   const campaignOptions = [
     { value: '', label: '-- Select Active Campaign --' },
-    ...jds.map((jd) => ({
-      value: jd.jd_id,
-      label: `${jd.title} (${jd.jd_id})`,
-      fullLabel: `${jd.title} (${jd.jd_id})`
-    }))
+    ...jds.map((jd) => buildJdDropdownOption(jd))
   ];
 
   return (

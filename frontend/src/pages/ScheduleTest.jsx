@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Send, Calendar, Clock, Users, CheckSquare, AlertCircle, User } from 'lucide-react';
 import CandidateProfileModal from '../components/CandidateProfileModal';
 import ResponsiveDropdown from '../components/ResponsiveDropdown';
+import { buildJdDropdownOption } from '../utils/jdDropdown';
 
 const ScheduleTest = ({ navigateTo }) => {
   const [jds, setJds] = useState([]);
@@ -122,11 +123,7 @@ const ScheduleTest = ({ navigateTo }) => {
 
   const campaignOptions = [
     { value: '', label: '-- Select JD with generated test --' },
-    ...jds.map((jd) => ({
-      value: jd.jd_id,
-      label: `${jd.title} (${jd.jd_id})`,
-      fullLabel: `${jd.title} • ${jd.company} (${jd.jd_id}) - ${jd.state?.replace(/_/g, ' ') || ''}`
-    }))
+    ...jds.map((jd) => buildJdDropdownOption(jd))
   ];
 
   return (

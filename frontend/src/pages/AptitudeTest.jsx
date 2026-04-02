@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Code, Users, ArrowRight, CheckSquare, Square, Trash2, Edit3, Plus, Save, Sparkles, BookOpen, Settings, Eye, EyeOff, ChevronDown, ChevronUp, User } from 'lucide-react';
 import CandidateProfileModal from '../components/CandidateProfileModal';
 import ResponsiveDropdown from '../components/ResponsiveDropdown';
+import { buildJdDropdownOption } from '../utils/jdDropdown';
 
 const AptitudeTest = ({ navigateTo }) => {
   const [jds, setJds] = useState([]);
@@ -248,11 +249,7 @@ const AptitudeTest = ({ navigateTo }) => {
 
   const campaignOptions = [
     { value: '', label: '-- Select Campaign --' },
-    ...jds.map((jd) => ({
-      value: jd.jd_id,
-      label: `${jd.title} (${jd.jd_id})`,
-      fullLabel: `${jd.title} • ${jd.company} - ${jd.state?.replace(/_/g, ' ') || ''}`
-    }))
+    ...jds.map((jd) => buildJdDropdownOption(jd))
   ];
 
   return (

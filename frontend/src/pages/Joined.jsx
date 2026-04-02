@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PartyPopper, Briefcase, Calendar, Mail, Award, Eye } from 'lucide-react';
 import CandidateProfileModal from '../components/CandidateProfileModal';
 import ResponsiveDropdown from '../components/ResponsiveDropdown';
+import { buildJdDropdownOption } from '../utils/jdDropdown';
 
 const Joined = () => {
   const [joined, setJoined] = useState([]);
@@ -36,21 +37,11 @@ const Joined = () => {
     ? joined 
     : joined.filter(p => p.JD_ID === selectedJd);
 
-  const formatCampaignLabel = (jd) => {
-    const rawTitle = (jd?.title || '').trim();
-    const shortTitle = rawTitle.length > 16 ? `${rawTitle.slice(0, 16)}...` : rawTitle;
-    return `${shortTitle} (${jd.jd_id})`;
-  };
-
   const campaignOptions = [
     { value: 'all', label: '-- All Campaigns --' },
     ...jds
       .filter(jd => joined.some(p => p.JD_ID === jd.jd_id))
-      .map(jd => ({
-        value: jd.jd_id,
-        label: formatCampaignLabel(jd),
-        fullLabel: `${jd.title} (${jd.jd_id})`
-      }))
+      .map(jd => buildJdDropdownOption(jd))
   ];
 
   return (
