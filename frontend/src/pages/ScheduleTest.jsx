@@ -5,6 +5,7 @@ import ResponsiveDropdown from '../components/ResponsiveDropdown';
 import { buildJdDropdownOption, sortJdsNewestFirst } from '../utils/jdDropdown';
 
 const ScheduleTest = ({ navigateTo }) => {
+  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
   const [jds, setJds] = useState([]);
   const [selectedJd, setSelectedJd] = useState('');
   const [candidates, setCandidates] = useState([]);
@@ -20,18 +21,18 @@ const ScheduleTest = ({ navigateTo }) => {
   const [selectedCandidateModal, setSelectedCandidateModal] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8000/jd/all')
+    fetch(`${apiBase}/jd/all`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success') {
           setJds(sortJdsNewestFirst(data.jds.filter(j => ['APTITUDE_GENERATED', 'TEST_SCHEDULED', 'SCREENING_COMPLETE'].includes(j.state))));
         }
       });
-  }, []);
+  }, [apiBase]);
 
   useEffect(() => {
     if (!selectedJd) return;
-    fetch(`http://localhost:8000/jd/${selectedJd}/candidates?status=Shortlisted`)
+    fetch(`${apiBase}/jd/${selectedJd}/candidates?status=Shortlisted`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success') {
@@ -41,12 +42,12 @@ const ScheduleTest = ({ navigateTo }) => {
       });
     
     // Get JD detail for company name
-    fetch(`http://localhost:8000/jd/${selectedJd}/detail`)
+    fetch(`${apiBase}/jd/${selectedJd}/detail`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success') setJdDetail(data.jd);
       });
-  }, [selectedJd]);
+  }, [selectedJd, apiBase]);
 
   const toggleCandidate = (email) => {
     setSelectedCandidates(prev =>
@@ -80,7 +81,7 @@ const ScheduleTest = ({ navigateTo }) => {
         const token = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
         const testLink = `${window.location.origin}/?page=test_env&token=${token}`;
 
-        const resp = await fetch('http://localhost:8000/test/send', {
+        const resp = await fetch(`${apiBase}/test/send`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -106,7 +107,7 @@ const ScheduleTest = ({ navigateTo }) => {
       }
 
       // Update pipeline state
-      await fetch(`http://localhost:8000/jd/update_state?jd_id=${selectedJd}&new_state=TEST_SENT`, { method: 'POST' });
+      await fetch(`${apiBase}/jd/update_state?jd_id=${selectedJd}&new_state=TEST_SENT`, { method: 'POST' });
 
       setSent(true);
       setSendProgress('');
