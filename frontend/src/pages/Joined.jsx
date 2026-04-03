@@ -97,13 +97,6 @@ const Joined = () => {
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Mail size={12} /> {person.Candidate_Email}
                     </div>
-                    <button
-                      onClick={() => setSelectedCandidateModal(person)}
-                      className="btn btn-sm btn-outline joined-mobile-profile-btn"
-                      style={{ marginTop: '8px', alignItems: 'center', gap: '5px' }}
-                    >
-                      <Eye size={14} /> Profile
-                    </button>
                   </td>
                   <td data-label="Role">
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -144,13 +137,6 @@ const Joined = () => {
                   <div className="joined-mobile-name">{person.Candidate_Name}</div>
                   <div className="joined-mobile-email"><Mail size={12} /> {person.Candidate_Email}</div>
                 </div>
-                <button
-                  onClick={() => setSelectedCandidateModal(person)}
-                  className="btn btn-sm btn-outline joined-mobile-profile-btn"
-                  style={{ alignItems: 'center', gap: '5px' }}
-                >
-                  <Eye size={14} /> Profile
-                </button>
               </div>
 
               <div className="joined-mobile-meta-grid">
