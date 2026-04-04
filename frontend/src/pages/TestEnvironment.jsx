@@ -55,6 +55,7 @@ const TestEnvironment = () => {
   const [verifiedEmail, setVerifiedEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const computeViolationStatus = () => {
     if (
@@ -516,17 +517,6 @@ const TestEnvironment = () => {
   const handleAutoSubmit = () => { alert('⏰ Time is up! Auto-submitting.'); submitTest(); };
   const handleManualSubmit = () => { if (window.confirm('Submit your test? You cannot change answers after.')) submitTest(); };
 
-  // ── MOBILE BLOCK ──
-  if (isMobile) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#0a0d14', color: '#f8fafc', padding: '40px', textAlign: 'center' }}>
-        <Monitor size={80} color="#ef4444" style={{ marginBottom: '20px' }} />
-        <h1 style={{ color: '#ef4444', marginBottom: '16px' }}>Desktop Required</h1>
-        <p style={{ color: '#94a3b8', maxWidth: '400px', lineHeight: 1.6 }}>This assessment must be taken on a desktop or laptop with a webcam. Mobile devices are not permitted.</p>
-      </div>
-    );
-  }
-
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#0a0d14', color: '#f8fafc' }}>
@@ -677,10 +667,28 @@ const TestEnvironment = () => {
   const totalQuestions = mcqs.length + codingQs.length;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0d14', color: '#f8fafc' }}>
+    <div className="test-environment-container" style={{ display: 'flex', minHeight: '100vh', background: '#0a0d14', color: '#f8fafc', position: 'relative' }}>
       
-      {/* ── LEFT SIDEBAR ── */}
-      <div style={{ width: '260px', background: '#111827', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', position: 'fixed', height: '100vh', zIndex: 10 }}>
+      {/* Mobile overlay */}
+      {sidebarOpen && isMobile && (
+        <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9 }} />
+      )}
+      
+      {/* ── SIDEBAR (Responsive) ── */}
+      <div className={`test-sidebar ${sidebarOpen ? 'open' : ''}`} style={{
+        width: isMobile ? '90vw' : (isMobile ? '100%' : '260px'),
+        background: '#111827',
+        borderRight: isMobile ? 'none' : '1px solid rgba(255,255,255,0.06)',
+        display: 'flex',
+        flexDirection: 'column',
+        position: isMobile ? 'fixed' : 'fixed',
+        height: isMobile ? '100vh' : '100vh',
+        zIndex: sidebarOpen && isMobile ? 100 : 10,
+        transform: isMobile && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
+        transition: 'transform 0.3s ease',
+        maxWidth: isMobile ? '90vw' : '260px',
+        left: 0,
+      }}>
         
         {/* Camera */}
         <div style={{ padding: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -696,7 +704,7 @@ const TestEnvironment = () => {
         <div style={{ padding: '16px', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: '#64748b', letterSpacing: '1.5px', marginBottom: '4px' }}>Time Remaining</div>
           <div style={{
-            fontSize: '2rem', fontWeight: 800, fontFamily: 'monospace', letterSpacing: '2px',
+            fontSize: isMobile ? '1.6rem' : '2rem', fontWeight: 800, fontFamily: 'monospace', letterSpacing: '2px',
             color: timeLeft < 300 ? '#ef4444' : timeLeft < 600 ? '#f59e0b' : '#10b981',
             textShadow: timeLeft < 300 ? '0 0 10px rgba(239,68,68,0.5)' : 'none',
           }}>
@@ -720,7 +728,7 @@ const TestEnvironment = () => {
           <div style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '8px', textTransform: 'uppercase' }}>Questions</div>
           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
             {mcqs.map((_, i) => (
-              <button key={`m${i}`} onClick={() => { setCurrentSection('mcq'); setCurrentQ(i); }}
+              <button key={`m${i}`} onClick={() => { setCurrentSection('mcq'); setCurrentQ(i); setSidebarOpen(false); }}
                 style={{
                   width: '32px', height: '32px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600,
                   background: currentSection === 'mcq' && currentQ === i ? '#6366f1'
@@ -737,7 +745,7 @@ const TestEnvironment = () => {
               <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '12px', marginBottom: '8px', textTransform: 'uppercase' }}>Coding</div>
               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                 {codingQs.map((_, i) => (
-                  <button key={`c${i}`} onClick={() => { setCurrentSection('coding'); setCurrentQ(i); }}
+                  <button key={`c${i}`} onClick={() => { setCurrentSection('coding'); setCurrentQ(i); setSidebarOpen(false); }}
                     style={{
                       width: '32px', height: '32px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600,
                       background: currentSection === 'coding' && currentQ === i ? '#0ea5e9'
@@ -783,44 +791,66 @@ const TestEnvironment = () => {
         </div>
       </div>
 
-      {/* ── MAIN CONTENT AREA ── */}
-      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      {/* ── MAIN CONTENT AREA (Responsive) ── */}
+      <div className="test-main-content" style={{ 
+        marginLeft: isMobile ? 0 : '260px', 
+        flex: 1, 
+        display: 'flex', 
+        flexDirection: 'column',
+        width: isMobile ? '100%' : 'auto'
+      }}>
+        
+        {/* Mobile Header with Hamburger */}
+        {isMobile && (
+          <div style={{ background: '#111827', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'transparent', border: 'none', color: '#f8fafc', cursor: 'pointer', fontSize: '24px', padding: '0' }}>
+              ☰
+            </button>
+            <span style={{ flex: 1, fontSize: '0.9rem', fontWeight: 600, color: '#f8fafc' }}>
+              {currentSection === 'mcq' ? 'MCQ' : 'Coding'} - Q{currentQ + 1}
+            </span>
+          </div>
+        )}
         
         {/* Top Tab Bar */}
-        <div style={{ background: '#111827', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '0 24px', display: 'flex', alignItems: 'center', gap: '4px', position: 'sticky', top: 0, zIndex: 5 }}>
+        <div style={{ background: '#111827', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '0 12px', display: 'flex', alignItems: 'center', gap: '4px', position: 'sticky', top: 0, zIndex: 5, overflowX: 'auto' }}>
           <button onClick={() => { setCurrentSection('mcq'); setCurrentQ(0); }}
-            style={{ padding: '14px 20px', background: 'transparent', border: 'none', color: currentSection === 'mcq' ? '#6366f1' : '#64748b', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', borderBottom: currentSection === 'mcq' ? '2px solid #6366f1' : '2px solid transparent' }}>
-            <BookOpen size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />MCQ ({mcqs.length})
+            style={{ padding: isMobile ? '12px 14px' : '14px 20px', background: 'transparent', border: 'none', color: currentSection === 'mcq' ? '#6366f1' : '#64748b', cursor: 'pointer', fontWeight: 600, fontSize: isMobile ? '0.8rem' : '0.9rem', borderBottom: currentSection === 'mcq' ? '2px solid #6366f1' : '2px solid transparent', whiteSpace: 'nowrap' }}>
+            <BookOpen size={isMobile ? 14 : 16} style={{ verticalAlign: 'middle', marginRight: '4px' }} />MCQ
           </button>
           {codingQs.length > 0 && (
             <button onClick={() => { setCurrentSection('coding'); setCurrentQ(0); }}
-              style={{ padding: '14px 20px', background: 'transparent', border: 'none', color: currentSection === 'coding' ? '#0ea5e9' : '#64748b', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', borderBottom: currentSection === 'coding' ? '2px solid #0ea5e9' : '2px solid transparent' }}>
-              <Code size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />Coding ({codingQs.length})
+              style={{ padding: isMobile ? '12px 14px' : '14px 20px', background: 'transparent', border: 'none', color: currentSection === 'coding' ? '#0ea5e9' : '#64748b', cursor: 'pointer', fontWeight: 600, fontSize: isMobile ? '0.8rem' : '0.9rem', borderBottom: currentSection === 'coding' ? '2px solid #0ea5e9' : '2px solid transparent', whiteSpace: 'nowrap' }}>
+              <Code size={isMobile ? 14 : 16} style={{ verticalAlign: 'middle', marginRight: '4px' }} />Coding
             </button>
           )}
-          <div style={{ flex: 1 }}></div>
-          <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{testData.company_name || ''} • {testData.job_title}</span>
+          {!isMobile && (
+            <>
+              <div style={{ flex: 1 }}></div>
+              <span style={{ fontSize: '0.8rem', color: '#64748b', whiteSpace: 'nowrap' }}>{testData.company_name || ''} • {testData.job_title}</span>
+            </>
+          )}
         </div>
 
         {/* ── MCQ SECTION ── */}
         {currentSection === 'mcq' && mcqs.length > 0 && (
-          <div style={{ padding: '30px 40px', flex: 1 }}>
-            <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div style={{ padding: isMobile ? '16px' : '30px 40px', flex: 1, overflowY: 'auto' }}>
+            <div style={{ maxWidth: '100%', margin: '0 auto' }}>
               {/* Question header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                <span style={{ fontSize: isMobile ? '0.75rem' : '0.8rem', color: '#64748b', fontWeight: 500 }}>
                   Question {currentQ + 1} of {mcqs.length}
                 </span>
                 <button onClick={() => toggleFlag(`mcq_${currentQ}`)}
-                  style={{ background: flaggedQuestions[`mcq_${currentQ}`] ? 'rgba(245,158,11,0.15)' : 'transparent', border: `1px solid ${flaggedQuestions[`mcq_${currentQ}`] ? '#f59e0b' : 'rgba(255,255,255,0.08)'}`, borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', color: flaggedQuestions[`mcq_${currentQ}`] ? '#f59e0b' : '#64748b', fontSize: '0.8rem' }}>
-                  <Flag size={12} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-                  {flaggedQuestions[`mcq_${currentQ}`] ? 'Flagged' : 'Flag for Review'}
+                  style={{ background: flaggedQuestions[`mcq_${currentQ}`] ? 'rgba(245,158,11,0.15)' : 'transparent', border: `1px solid ${flaggedQuestions[`mcq_${currentQ}`] ? '#f59e0b' : 'rgba(255,255,255,0.08)'}`, borderRadius: '6px', padding: isMobile ? '4px 8px' : '6px 12px', cursor: 'pointer', color: flaggedQuestions[`mcq_${currentQ}`] ? '#f59e0b' : '#64748b', fontSize: isMobile ? '0.75rem' : '0.8rem', whiteSpace: 'nowrap' }}>
+                  <Flag size={isMobile ? 10 : 12} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                  {flaggedQuestions[`mcq_${currentQ}`] ? 'Flagged' : 'Flag'}
                 </button>
               </div>
 
               {/* Question card */}
-              <div style={{ background: '#111827', borderRadius: '14px', padding: '32px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '24px' }}>
-                <h2 style={{ fontSize: '1.15rem', fontWeight: 600, lineHeight: 1.6, margin: '0 0 28px', color: '#f1f5f9' }}>
+              <div style={{ background: '#111827', borderRadius: '14px', padding: isMobile ? '16px' : '32px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '24px' }}>
+                <h2 style={{ fontSize: isMobile ? '1rem' : '1.15rem', fontWeight: 600, lineHeight: 1.6, margin: '0 0 22px', color: '#f1f5f9' }}>
                   {mcqs[currentQ].question}
                 </h2>
 
@@ -828,88 +858,93 @@ const TestEnvironment = () => {
                   {mcqs[currentQ].options?.map((opt, oi) => (
                     <button key={oi} onClick={() => handleMcqAnswer(currentQ, opt)}
                       style={{
-                        padding: '16px 20px', textAlign: 'left', cursor: 'pointer', fontSize: '0.95rem',
+                        padding: isMobile ? '12px 14px' : '16px 20px', textAlign: 'left', cursor: 'pointer', fontSize: isMobile ? '0.9rem' : '0.95rem',
                         background: mcqAnswers[currentQ] === opt ? 'rgba(99,102,241,0.15)' : '#1e293b',
                         border: `2px solid ${mcqAnswers[currentQ] === opt ? '#6366f1' : 'rgba(255,255,255,0.04)'}`,
                         borderRadius: '10px', color: '#f1f5f9', transition: 'all 0.15s',
-                        display: 'flex', alignItems: 'center', gap: '14px',
+                        display: 'flex', alignItems: 'center', gap: '12px',
                       }}>
                       <span style={{
-                        display: 'inline-flex', width: '32px', height: '32px', borderRadius: '50%', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 700, flexShrink: 0,
+                        display: 'inline-flex', width: isMobile ? '28px' : '32px', height: isMobile ? '28px' : '32px', borderRadius: '50%', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '0.8rem' : '0.85rem', fontWeight: 700, flexShrink: 0,
                         background: mcqAnswers[currentQ] === opt ? '#6366f1' : '#334155',
                         color: mcqAnswers[currentQ] === opt ? '#fff' : '#94a3b8',
                       }}>
                         {String.fromCharCode(65 + oi)}
                       </span>
-                      {opt}
+                      <span style={{ overflow: 'wrap', wordBreak: 'break-word' }}>{opt}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Navigation */}
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
                 <button onClick={() => setCurrentQ(Math.max(0, currentQ - 1))} disabled={currentQ === 0}
-                  style={{ padding: '10px 20px', background: '#1e293b', border: 'none', borderRadius: '8px', color: currentQ === 0 ? '#334155' : '#94a3b8', cursor: currentQ === 0 ? 'default' : 'pointer', fontSize: '0.9rem' }}>
-                  <ChevronLeft size={16} style={{ verticalAlign: 'middle' }} /> Previous
+                  style={{ padding: isMobile ? '8px 12px' : '10px 20px', background: '#1e293b', border: 'none', borderRadius: '8px', color: currentQ === 0 ? '#334155' : '#94a3b8', cursor: currentQ === 0 ? 'default' : 'pointer', fontSize: isMobile ? '0.8rem' : '0.9rem', minWidth: 'fit-content' }}>
+                  <ChevronLeft size={isMobile ? 14 : 16} style={{ verticalAlign: 'middle' }} />
                 </button>
                 <button onClick={() => {
                   if (currentQ === mcqs.length - 1 && codingQs.length > 0) {
                     setCurrentSection('coding'); setCurrentQ(0);
+                  } else if (currentQ === mcqs.length - 1 && codingQs.length === 0) {
+                    handleManualSubmit();
                   } else {
                     setCurrentQ(Math.min(mcqs.length - 1, currentQ + 1));
                   }
                 }}
-                  style={{ padding: '10px 20px', background: '#6366f1', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
-                  {currentQ === mcqs.length - 1 && codingQs.length > 0 ? 'Go to Coding →' : 'Next'} <ChevronRight size={16} style={{ verticalAlign: 'middle' }} />
+                  style={{ padding: isMobile ? '8px 12px' : '10px 20px', background: '#6366f1', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: isMobile ? '0.8rem' : '0.9rem', flex: 1, minWidth: 'fit-content' }}>
+                  {currentQ === mcqs.length - 1
+                    ? (codingQs.length > 0 ? 'Go to Coding' : 'Submit')
+                    : 'Next'}
+                  {!(currentQ === mcqs.length - 1 && codingQs.length === 0) && !isMobile && <ChevronRight size={16} style={{ verticalAlign: 'middle', marginLeft: '6px' }} />}
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* ── CODING SECTION (Split Pane) ── */}
+        {/* ── CODING SECTION (Responsive Split Pane) ── */}
         {currentSection === 'coding' && codingQs.length > 0 && (
-          <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', overflow: 'hidden' }}>
             
             {/* LEFT: Problem Description */}
-            <div style={{ width: '45%', overflowY: 'auto', borderRight: '1px solid rgba(255,255,255,0.06)', padding: '24px' }}>
-              <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '8px' }}>Coding Challenge {currentQ + 1} of {codingQs.length}</div>
-              <h2 style={{ margin: '0 0 16px', fontSize: '1.2rem', color: '#f1f5f9' }}>{codingQs[currentQ].title}</h2>
-              <p style={{ color: '#94a3b8', lineHeight: 1.7, fontSize: '0.9rem', whiteSpace: 'pre-wrap' }}>{codingQs[currentQ].description}</p>
+            <div style={{ width: isMobile ? '100%' : '45%', overflowY: 'auto', borderRight: !isMobile ? '1px solid rgba(255,255,255,0.06)' : 'none', borderBottom: isMobile ? '1px solid rgba(255,255,255,0.06)' : 'none', padding: isMobile ? '16px' : '24px', height: isMobile ? 'auto' : '100%', maxHeight: isMobile ? undefined : '100%' }}>
+              <div style={{ fontSize: isMobile ? '0.7rem' : '0.75rem', color: '#64748b', marginBottom: '8px' }}>Coding Challenge {currentQ + 1} of {codingQs.length}</div>
+              <h2 style={{ margin: '0 0 14px', fontSize: isMobile ? '1rem' : '1.2rem', color: '#f1f5f9' }}>{codingQs[currentQ].title}</h2>
+              <p style={{ color: '#94a3b8', lineHeight: 1.7, fontSize: isMobile ? '0.85rem' : '0.9rem', whiteSpace: 'pre-wrap' }}>{codingQs[currentQ].description}</p>
 
               {codingQs[currentQ].constraints && (
-                <div style={{ margin: '16px 0', padding: '10px 14px', background: 'rgba(245,158,11,0.08)', borderRadius: '8px', border: '1px solid rgba(245,158,11,0.2)' }}>
-                  <strong style={{ color: '#f59e0b', fontSize: '0.8rem' }}>Constraints:</strong>
-                  <p style={{ margin: '4px 0 0', color: '#fbbf24', fontSize: '0.85rem' }}>{codingQs[currentQ].constraints}</p>
+                <div style={{ margin: '14px 0', padding: '10px 12px', background: 'rgba(245,158,11,0.08)', borderRadius: '8px', border: '1px solid rgba(245,158,11,0.2)' }}>
+                  <strong style={{ color: '#f59e0b', fontSize: isMobile ? '0.75rem' : '0.8rem' }}>Constraints:</strong>
+                  <p style={{ margin: '4px 0 0', color: '#fbbf24', fontSize: isMobile ? '0.8rem' : '0.85rem' }}>{codingQs[currentQ].constraints}</p>
                 </div>
               )}
 
               {/* Example */}
               {codingQs[currentQ].example_input && (
-                <div style={{ margin: '16px 0' }}>
-                  <h4 style={{ color: '#94a3b8', fontSize: '0.8rem', marginBottom: '8px' }}>Example:</h4>
-                  <div style={{ background: '#1e293b', borderRadius: '8px', padding: '12px', fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                <div style={{ margin: '14px 0' }}>
+                  <h4 style={{ color: '#94a3b8', fontSize: isMobile ? '0.75rem' : '0.8rem', marginBottom: '8px' }}>Example:</h4>
+                  <div style={{ background: '#1e293b', borderRadius: '8px', padding: '10px', fontFamily: 'monospace', fontSize: isMobile ? '0.8rem' : '0.85rem' }}>
                     <div style={{ color: '#64748b', marginBottom: '4px' }}>Input:</div>
-                    <div style={{ color: '#10b981', marginBottom: '10px' }}>{codingQs[currentQ].example_input}</div>
+                    <div style={{ color: '#10b981', marginBottom: '8px', wordBreak: 'break-word' }}>{codingQs[currentQ].example_input}</div>
                     <div style={{ color: '#64748b', marginBottom: '4px' }}>Output:</div>
-                    <div style={{ color: '#10b981' }}>{codingQs[currentQ].example_output}</div>
+                    <div style={{ color: '#10b981', wordBreak: 'break-word' }}>{codingQs[currentQ].example_output}</div>
                   </div>
                 </div>
               )}
 
               {/* Test Case Results */}
               {codeResults[currentQ] && (
-                <div style={{ marginTop: '20px' }}>
+                <div style={{ marginTop: '18px' }}>
                   <h4 style={{
                     color: codeResults[currentQ].success ? '#10b981' : '#ef4444',
-                    fontSize: '0.85rem', marginBottom: '10px'
+                    fontSize: isMobile ? '0.8rem' : '0.85rem', marginBottom: '10px'
                   }}>
                     Results: {codeResults[currentQ].passed_count}/{codeResults[currentQ].total_count} Passed
                   </h4>
                   {(codeResults[currentQ].results || []).map((r, ri) => (
                     <div key={ri} style={{
-                      padding: '10px 12px', margin: '6px 0', borderRadius: '6px', fontSize: '0.8rem',
+                      padding: '8px 10px', margin: '6px 0', borderRadius: '6px', fontSize: isMobile ? '0.75rem' : '0.8rem',
                       background: r.passed ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
                       border: `1px solid ${r.passed ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
                       fontFamily: 'monospace',
@@ -918,7 +953,7 @@ const TestEnvironment = () => {
                         {r.passed ? '✓' : '✗'} Test Case {r.test_case || ri + 1}
                       </div>
                       {!r.passed && r.expected && (
-                        <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>
+                        <div style={{ color: '#94a3b8', fontSize: isMobile ? '0.7rem' : '0.75rem' }}>
                           Expected: {r.expected} | Got: {r.actual || 'N/A'}
                         </div>
                       )}
@@ -926,7 +961,7 @@ const TestEnvironment = () => {
                   ))}
 
                   {codeResults[currentQ].feedback && (
-                    <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '10px', fontStyle: 'italic' }}>
+                    <p style={{ fontSize: isMobile ? '0.75rem' : '0.8rem', color: '#94a3b8', marginTop: '10px', fontStyle: 'italic' }}>
                       💡 {codeResults[currentQ].feedback}
                     </p>
                   )}
@@ -934,41 +969,47 @@ const TestEnvironment = () => {
               )}
 
               {/* Coding nav */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '24px' }}>
-                <button onClick={() => { if (currentQ === 0) { setCurrentSection('mcq'); setCurrentQ(mcqs.length - 1); } else setCurrentQ(currentQ - 1); }}
-                  style={{ padding: '8px 16px', background: '#1e293b', border: 'none', borderRadius: '6px', color: '#94a3b8', cursor: 'pointer', fontSize: '0.85rem' }}>
-                  ← {currentQ === 0 ? 'Back to MCQ' : 'Previous'}
-                </button>
-                {currentQ < codingQs.length - 1 && (
-                  <button onClick={() => setCurrentQ(currentQ + 1)}
-                    style={{ padding: '8px 16px', background: '#0ea5e9', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>
-                    Next →
+              {isMobile && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '18px', gap: '10px' }}>
+                  <button onClick={() => { if (currentQ === 0) { setCurrentSection('mcq'); setCurrentQ(mcqs.length - 1); } else setCurrentQ(currentQ - 1); }}
+                    style={{ padding: '8px 12px', background: '#1e293b', border: 'none', borderRadius: '6px', color: '#94a3b8', cursor: 'pointer', fontSize: '0.8rem', flex: 1 }}>
+                    ← {currentQ === 0 ? 'Back' : 'Prev'}
                   </button>
-                )}
-              </div>
+                  {currentQ < codingQs.length - 1 && (
+                    <button onClick={() => setCurrentQ(currentQ + 1)}
+                      style={{ padding: '8px 12px', background: '#0ea5e9', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem', flex: 1 }}>
+                      Next →
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* RIGHT: Code Editor */}
-            <div style={{ width: '55%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: isMobile ? '100%' : '55%', display: 'flex', flexDirection: 'column', height: isMobile ? '400px' : '100%' }}>
               {/* Language selector + Run */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', background: '#111827', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px', padding: '8px 12px', background: '#111827', borderBottom: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
                 <select value={codingLanguages[currentQ] || 'python'}
                   onChange={e => handleLanguageChange(currentQ, e.target.value)}
-                  style={{ padding: '6px 12px', background: '#1e293b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f8fafc', fontSize: '0.85rem' }}>
+                  style={{ padding: '4px 8px', background: '#1e293b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f8fafc', fontSize: isMobile ? '0.8rem' : '0.85rem' }}>
                   <option value="python">Python</option>
                   <option value="javascript">JavaScript</option>
                   <option value="java">Java</option>
                   <option value="cpp">C++</option>
                 </select>
                 <button onClick={() => handleRunCode(currentQ)} disabled={runningCode[currentQ]}
-                  style={{ padding: '6px 16px', background: '#10b981', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {runningCode[currentQ] ? <Loader size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Play size={14} />}
-                  {runningCode[currentQ] ? 'Running...' : 'Run Code'}
+                  style={{ padding: isMobile ? '4px 10px' : '6px 16px', background: '#10b981', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: isMobile ? '0.8rem' : '0.85rem', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
+                  {runningCode[currentQ] ? <Loader size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Play size={12} />}
+                  {runningCode[currentQ] ? 'Running...' : 'Run'}
                 </button>
-                <div style={{ flex: 1 }}></div>
-                <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                  <Terminal size={12} style={{ verticalAlign: 'middle' }} /> Code Editor
-                </span>
+                {!isMobile && (
+                  <>
+                    <div style={{ flex: 1 }}></div>
+                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                      <Terminal size={12} style={{ verticalAlign: 'middle' }} /> Code Editor
+                    </span>
+                  </>
+                )}
               </div>
 
               {/* Code textarea */}
@@ -978,9 +1019,9 @@ const TestEnvironment = () => {
                 placeholder={`# Write your ${codingLanguages[currentQ] || 'python'} solution here...\n\ndef solve():\n    pass`}
                 spellCheck={false}
                 style={{
-                  flex: 1, width: '100%', padding: '20px', resize: 'none',
+                  flex: 1, width: '100%', padding: isMobile ? '12px' : '20px', resize: 'none',
                   background: '#0d1117', border: 'none', color: '#c9d1d9',
-                  fontSize: '14px', fontFamily: "'Fira Code', 'Cascadia Code', 'Consolas', monospace",
+                  fontSize: isMobile ? '12px' : '14px', fontFamily: "'Fira Code', 'Cascadia Code', 'Consolas', monospace",
                   lineHeight: 1.6, outline: 'none', tabSize: 4,
                 }}
                 onKeyDown={e => {
@@ -994,6 +1035,21 @@ const TestEnvironment = () => {
                   }
                 }}
               />
+
+              {!isMobile && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <button onClick={() => { if (currentQ === 0) { setCurrentSection('mcq'); setCurrentQ(mcqs.length - 1); } else setCurrentQ(currentQ - 1); }}
+                    style={{ padding: '6px 12px', background: '#1e293b', border: 'none', borderRadius: '6px', color: '#94a3b8', cursor: 'pointer', fontSize: '0.8rem' }}>
+                    ← {currentQ === 0 ? 'Back to MCQ' : 'Previous'}
+                  </button>
+                  {currentQ < codingQs.length - 1 && (
+                    <button onClick={() => setCurrentQ(currentQ + 1)}
+                      style={{ padding: '6px 12px', background: '#0ea5e9', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}>
+                      Next →
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -889,6 +889,75 @@ a:hover { color: var(--accent); }
   }
 }
 
+/* ── TestEnvironment Responsive Styles ── */
+.test-environment-container {
+  width: 100%;
+}
+
+.test-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99,102,241,0.3) transparent;
+}
+
+.test-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.test-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.test-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(99,102,241,0.3);
+  border-radius: 3px;
+}
+
+.test-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(99,102,241,0.5);
+}
+
+.test-main-content {
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .test-sidebar {
+    width: 220px !important;
+    max-width: 220px !important;
+  }
+
+  .test-main-content {
+    margin-left: 220px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .test-sidebar {
+    width: 85vw !important;
+    max-width: 85vw !important;
+  }
+
+  .test-main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  .test-environment-container {
+    flex-direction: column;
+  }
+
+  /* Scrollable areas on mobile */
+  .test-sidebar {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Question navigator on mobile should be scrollable horizontally */
+  .test-sidebar > div:nth-child(4) {
+    max-height: auto;
+  }
+}
+
 @media (max-width: 480px) {
   .modal-outer {
     padding: 8px !important;
