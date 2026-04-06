@@ -162,13 +162,23 @@ const AnalyseResults = ({ navigateTo }) => {
                 return candEmail === email;
              });
           });
+
+          const assessmentRows = data.assessments || [];
           
           const cands = validatedCands.map(c => {
             const email = String(c.Email || c.email || "").toLowerCase().trim();
-            const assessment = (data.scheduled_tests || []).find(t => 
+            const proctoringAssessment = assessmentRows.find(a =>
+              String(a.Candidate_Email || a.candidate_email || a.Email || a.email || "").toLowerCase().trim() === email
+            );
+            const scheduledTest = (data.scheduled_tests || []).find(t =>
                String(t.Candidate_Email || t.Candidate_Emai || t.email || "").toLowerCase().trim() === email
             );
-            return { ...c, test_status: assessment?.Status || 'Pending', test_token: assessment?.Token || '' };
+
+            return {
+              ...c,
+              test_status: proctoringAssessment?.Proctoring_Status || proctoringAssessment?.proctoring_status || c.test_status || 'Pending',
+              test_token: proctoringAssessment?.Test_Token || proctoringAssessment?.test_token || scheduledTest?.Token || c.test_token || '',
+            };
           });
 
           // Deduplicate by email so the same candidate is shown once even if multiple rows exist.
