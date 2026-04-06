@@ -73,19 +73,42 @@ const TestEnvironment = () => {
   const DETECTION_FPS = 8;
   const DETECT_INTERVAL_MS = Math.floor(1000 / DETECTION_FPS);
   const GUIDE_BOX = { x: 0.26, y: 0.20, width: 0.48, height: 0.58 };
-  const FACE_RULES = {
-    missingWarnMs: 3000,
-    missingMajorMs: 10000,
-    lookingAwayWarnMs: 4500,
-    lookingAwayMajorMs: 10000,
-    centerDeadzoneX: 0.18,
-    centerDeadzoneY: 0.18,
-    directionPersistMs: 1400,
-    minFaceRatio: 0.03,
-    maxFaceRatio: 0.72,
-    framePaddingX: 0.08,
-    framePaddingY: 0.10,
+  
+  // Mobile-specific and desktop face tracking rules
+  const getFaceRules = () => {
+    if (isMobile) {
+      return {
+        missingWarnMs: 4000,          // More lenient on mobile (shaky hands)
+        missingMajorMs: 12000,
+        lookingAwayWarnMs: 6000,      // Higher tolerance for mobile head movement
+        lookingAwayMajorMs: 12000,
+        centerDeadzoneX: 0.35,        // Larger deadzone - mobile faces are bigger and move more
+        centerDeadzoneY: 0.35,
+        directionPersistMs: 2500,     // Longer persistence - ignore brief movements
+        minFaceRatio: 0.04,           // Allow slightly smaller faces (worse lighting)
+        maxFaceRatio: 0.85,           // Allow much larger faces on mobile (closer to camera)
+        framePaddingX: 0.12,          // More forgiveness at frame edges
+        framePaddingY: 0.15,
+      };
+    }
+    
+    // Desktop defaults - stricter
+    return {
+      missingWarnMs: 3000,
+      missingMajorMs: 10000,
+      lookingAwayWarnMs: 5000,       // Increased from 4500 to reduce false positives
+      lookingAwayMajorMs: 10000,
+      centerDeadzoneX: 0.28,         // Increased from 0.18 to tolerate small movements
+      centerDeadzoneY: 0.28,
+      directionPersistMs: 2000,      // Increased from 1400 - brief movements don't trigger
+      minFaceRatio: 0.03,
+      maxFaceRatio: 0.72,
+      framePaddingX: 0.08,
+      framePaddingY: 0.10,
+    };
   };
+
+  const FACE_RULES = getFaceRules();
   const DIRECTION_THRESHOLDS = {
     yawLeft: -0.22,
     yawRight: 0.22,
