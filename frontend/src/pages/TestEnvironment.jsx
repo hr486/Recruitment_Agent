@@ -116,6 +116,7 @@ const TestEnvironment = () => {
   const violationCountRef = useRef(0);
   const violationScoreRef = useRef(0);
   const violationGateOpenRef = useRef(false);
+  const violationsLockedRef = useRef(false);
   const offDirectionRef = useRef(null);
 
   useEffect(() => {
@@ -255,8 +256,8 @@ const TestEnvironment = () => {
     // Camera preview is mirrored for users in many browsers, so map directions accordingly.
     if (yaw <= DIRECTION_THRESHOLDS.yawLeft) return 'right';
     if (yaw >= DIRECTION_THRESHOLDS.yawRight) return 'left';
-    if (pitch <= DIRECTION_THRESHOLDS.pitchUp) return 'down';
-    if (pitch >= DIRECTION_THRESHOLDS.pitchDown || mouthPitch >= 1.4) return 'up';
+    if (pitch <= DIRECTION_THRESHOLDS.pitchUp) return 'up';
+    if (pitch >= DIRECTION_THRESHOLDS.pitchDown || mouthPitch >= 1.4) return 'down';
     return 'center';
   };
 
@@ -266,8 +267,8 @@ const TestEnvironment = () => {
     const y = faceBox.centerY / video.videoHeight;
     if (x < GUIDE_BOX.x + FACE_RULES.centerDeadzoneX) return 'right';
     if (x > GUIDE_BOX.x + GUIDE_BOX.width - FACE_RULES.centerDeadzoneX) return 'left';
-    if (y < GUIDE_BOX.y + FACE_RULES.centerDeadzoneY) return 'down';
-    if (y > GUIDE_BOX.y + GUIDE_BOX.height - FACE_RULES.centerDeadzoneY) return 'up';
+    if (y < GUIDE_BOX.y + FACE_RULES.centerDeadzoneY) return 'up';
+    if (y > GUIDE_BOX.y + GUIDE_BOX.height - FACE_RULES.centerDeadzoneY) return 'down';
     return 'center';
   };
 
@@ -346,6 +347,11 @@ const TestEnvironment = () => {
     if (now - lastAt < VIOLATION_COOLDOWN_MS) return;
     violationCooldownRef.current[eventType] = now;
 
+    if (violationsLockedRef.current) {
+      recordProctorEvent(eventType, severity, details);
+      return;
+    }
+
     setWarnings(prev => [...prev.slice(-9), `⚠️ ${details}`]);
     recordProctorEvent(eventType, severity, details);
 
@@ -355,6 +361,9 @@ const TestEnvironment = () => {
     setViolationCount(prev => {
       const next = prev + 1;
       const nextScore = violationScoreRef.current + weight;
+      if (next >= VIOLATION_LIMIT || nextScore >= VIOLATION_SCORE_LIMIT) {
+        violationsLockedRef.current = true;
+      }
       const limitHint = next >= VIOLATION_LIMIT || nextScore >= VIOLATION_SCORE_LIMIT
         ? 'Violation limit reached. Test will continue and HR will review final decision.'
         : 'Please stay compliant and continue the test.';
