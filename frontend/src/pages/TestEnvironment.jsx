@@ -66,14 +66,16 @@ const TestEnvironment = () => {
     centerXMax: 0.70,
     centerYMin: 0.25,
     centerYMax: 0.75,
-    directionPersistSec: 1,
+    framePaddingX: 0.08,
+    framePaddingY: 0.10,
+    directionPersistMs: 450,
+    directionLongMs: 1800,
     faceCooldownMs: 5000,
     graceMs: 5000,
     noseConfidence: 0.55,
     eyeConfidence: 0.50,
     earConfidence: 0.45,
     earMissingViolationSec: 8,
-    directionLongSec: 5,
   };
   const [violationCount, setViolationCount] = useState(0);
   const [faceDirectionCounts, setFaceDirectionCounts] = useState({ left: 0, right: 0, up: 0, down: 0 });
@@ -81,6 +83,7 @@ const TestEnvironment = () => {
   const violationCountRef = useRef(0);
   const autoSubmittedForViolationRef = useRef(false);
   const offDirectionRef = useRef(null);
+  const offDirectionStartedAtRef = useRef(0);
   const testStartAtRef = useRef(0);
   const lastViolationAtRef = useRef({});
   const earMissingSecondsRef = useRef(0);
@@ -158,14 +161,41 @@ const TestEnvironment = () => {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = 'rgba(16, 185, 129, 0.45)';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(
-      canvas.width * BALANCED.centerXMin,
-      canvas.height * BALANCED.centerYMin,
-      canvas.width * (BALANCED.centerXMax - BALANCED.centerXMin),
-      canvas.height * (BALANCED.centerYMax - BALANCED.centerYMin)
-    );
+    const guideX = canvas.width * BALANCED.centerXMin;
+    const guideY = canvas.height * BALANCED.centerYMin;
+    const guideWidth = canvas.width * (BALANCED.centerXMax - BALANCED.centerXMin);
+    const guideHeight = canvas.height * (BALANCED.centerYMax - BALANCED.centerYMin);
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.18)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(guideX, guideY, guideWidth, guideHeight);
+
+    ctx.strokeStyle = 'rgba(16, 185, 129, 0.95)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(guideX, guideY, guideWidth, guideHeight);
+
+    const corner = Math.min(guideWidth, guideHeight) * 0.12;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(guideX, guideY + corner);
+    ctx.lineTo(guideX, guideY);
+    ctx.lineTo(guideX + corner, guideY);
+    ctx.moveTo(guideX + guideWidth - corner, guideY);
+    ctx.lineTo(guideX + guideWidth, guideY);
+    ctx.lineTo(guideX + guideWidth, guideY + corner);
+    ctx.moveTo(guideX, guideY + guideHeight - corner);
+    ctx.lineTo(guideX, guideY + guideHeight);
+    ctx.lineTo(guideX + corner, guideY + guideHeight);
+    ctx.moveTo(guideX + guideWidth - corner, guideY + guideHeight);
+    ctx.lineTo(guideX + guideWidth, guideY + guideHeight);
+    ctx.lineTo(guideX + guideWidth, guideY + guideHeight - corner);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(8, 15, 32, 0.8)';
+    ctx.fillRect(guideX + 14, guideY + 14, 186, 28);
+    ctx.fillStyle = '#10b981';
+    ctx.font = '600 12px sans-serif';
+    ctx.fillText('Keep face inside the frame', guideX + 24, guideY + 33);
 
     if (!pose?.keypoints?.length) return;
 
@@ -180,6 +210,61 @@ const TestEnvironment = () => {
       ctx.arc(x, y, 4, 0, Math.PI * 2);
       ctx.fill();
     }
+  };
+
+  const getPoseFaceBounds = (pose, video) => {
+    if (!pose?.keypoints?.length || !video?.videoWidth || !video?.videoHeight) return null;
+
+    const visibleParts = pose.keypoints.filter((kp) => (
+      ['nose', 'leftEye', 'rightEye', 'leftEar', 'rightEar'].includes(kp.part) && (kp.score || 0) >= 0.35
+    ));
+
+    if (!visibleParts.length) return null;
+
+    const xs = visibleParts.map((kp) => kp.position.x);
+    const ys = visibleParts.map((kp) => kp.position.y);
+    const avgX = visibleParts.reduce((sum, kp) => sum + kp.position.x, 0) / visibleParts.length;
+    const avgY = visibleParts.reduce((sum, kp) => sum + kp.position.y, 0) / visibleParts.length;
+
+    const rawMinX = Math.max(0, Math.min(...xs));
+    const rawMaxX = Math.min(video.videoWidth, Math.max(...xs));
+    const rawMinY = Math.max(0, Math.min(...ys));
+    const rawMaxY = Math.min(video.videoHeight, Math.max(...ys));
+
+    const rawWidth = Math.max(rawMaxX - rawMinX, video.videoWidth * 0.12);
+    const rawHeight = Math.max(rawMaxY - rawMinY, video.videoHeight * 0.16);
+    const padX = Math.max(rawWidth * 0.28, video.videoWidth * 0.03);
+    const padY = Math.max(rawHeight * 0.32, video.videoHeight * 0.04);
+
+    const x = Math.max(0, avgX - (rawWidth / 2) - padX);
+    const y = Math.max(0, avgY - (rawHeight / 2) - padY);
+    const width = Math.min(video.videoWidth - x, rawWidth + (padX * 2));
+    const height = Math.min(video.videoHeight - y, rawHeight + (padY * 2));
+
+    return { x, y, width, height };
+  };
+
+  const getGuideRect = (video) => {
+    if (!video?.videoWidth || !video?.videoHeight) return null;
+    return {
+      x: video.videoWidth * BALANCED.centerXMin,
+      y: video.videoHeight * BALANCED.centerYMin,
+      width: video.videoWidth * (BALANCED.centerXMax - BALANCED.centerXMin),
+      height: video.videoHeight * (BALANCED.centerYMax - BALANCED.centerYMin),
+    };
+  };
+
+  const isBoxInsideGuide = (box, guide) => {
+    if (!box || !guide) return false;
+
+    const marginX = guide.width * BALANCED.framePaddingX;
+    const marginY = guide.height * BALANCED.framePaddingY;
+    return (
+      box.x >= guide.x + marginX &&
+      box.y >= guide.y + marginY &&
+      box.x + box.width <= guide.x + guide.width - marginX &&
+      box.y + box.height <= guide.y + guide.height - marginY
+    );
   };
 
   const registerFaceViolation = (eventType, severity, details) => {
@@ -373,6 +458,9 @@ const TestEnvironment = () => {
           const rightEye = pose.keypoints.find(kp => kp.part === 'rightEye');
           const leftEar = pose.keypoints.find(kp => kp.part === 'leftEar');
           const rightEar = pose.keypoints.find(kp => kp.part === 'rightEar');
+          const faceBox = getPoseFaceBounds(pose, videoRef.current);
+          const guideRect = getGuideRect(videoRef.current);
+          const faceInsideGuide = isBoxInsideGuide(faceBox, guideRect);
 
           const bothEyesVisible = (leftEye?.score || 0) > BALANCED.eyeConfidence && (rightEye?.score || 0) > BALANCED.eyeConfidence;
           const bothEarsVisible = (leftEar?.score || 0) > BALANCED.earConfidence && (rightEar?.score || 0) > BALANCED.earConfidence;
@@ -401,45 +489,62 @@ const TestEnvironment = () => {
 
           if ((nose?.score || 0) > BALANCED.noseConfidence) {
             const video = videoRef.current;
-            const centerX = nose.position.x / video.videoWidth;
-            const centerY = nose.position.y / video.videoHeight;
+            const referencePoint = faceBox
+              ? {
+                  x: faceBox.x + (faceBox.width / 2),
+                  y: faceBox.y + (faceBox.height / 2),
+                }
+              : nose.position;
+            const centerX = referencePoint.x / video.videoWidth;
+            const centerY = referencePoint.y / video.videoHeight;
 
             let direction = 'center';
-            if (centerX < BALANCED.centerXMin) direction = 'left';
-            else if (centerX > BALANCED.centerXMax) direction = 'right';
-            else if (centerY < BALANCED.centerYMin) direction = 'up';
-            else if (centerY > BALANCED.centerYMax) direction = 'down';
+            if (faceInsideGuide) {
+              setFaceTrackingState('Face inside frame');
+              offDirectionRef.current = null;
+              offDirectionStartedAtRef.current = 0;
+              offFrameSecondsRef.current = 0;
+              faceOffMinorRaisedRef.current = false;
+              faceOffHighRaisedRef.current = false;
+            } else {
+              if (centerX < BALANCED.centerXMin) direction = 'left';
+              else if (centerX > BALANCED.centerXMax) direction = 'right';
+              else if (centerY < BALANCED.centerYMin) direction = 'up';
+              else if (centerY > BALANCED.centerYMax) direction = 'down';
 
-            if (direction !== 'center') {
-              setFaceTrackingState(`Face ${direction}`);
+              if (direction !== 'center') {
+                setFaceTrackingState(`Face ${direction}`);
 
-              if (offDirectionRef.current !== direction) {
-                offDirectionRef.current = direction;
-                offFrameSecondsRef.current = 0;
-                faceOffMinorRaisedRef.current = false;
-                faceOffHighRaisedRef.current = false;
+                if (offDirectionRef.current !== direction) {
+                  offDirectionRef.current = direction;
+                  offDirectionStartedAtRef.current = Date.now();
+                  offFrameSecondsRef.current = 0;
+                  faceOffMinorRaisedRef.current = false;
+                  faceOffHighRaisedRef.current = false;
+                }
+
+                const elapsedMs = Date.now() - (offDirectionStartedAtRef.current || Date.now());
+                offFrameSecondsRef.current = elapsedMs / 1000;
+
+                if (elapsedMs >= BALANCED.directionPersistMs && !faceOffMinorRaisedRef.current) {
+                  faceOffMinorRaisedRef.current = true;
+                  setFaceOutOfFrameEvents(prev => prev + 1);
+                  setFaceDirectionCounts(prev => ({ ...prev, [direction]: (prev[direction] || 0) + 1 }));
+                  registerFaceViolation(`face_${direction}`, 'medium', `Face moved ${direction} for ${Math.max(1, Math.round(elapsedMs / 1000))}s`);
+                }
+
+                if (elapsedMs >= BALANCED.directionLongMs && !faceOffHighRaisedRef.current) {
+                  faceOffHighRaisedRef.current = true;
+                  setFaceOutOfFrameEvents(prev => prev + 1);
+                  registerFaceViolation(`face_${direction}_long`, 'high', `Face remained ${direction} for too long (${Math.round(elapsedMs / 1000)}s)`);
+                }
+                return;
               }
-
-              offFrameSecondsRef.current += 1;
-
-              if (offFrameSecondsRef.current >= BALANCED.directionPersistSec && !faceOffMinorRaisedRef.current) {
-                faceOffMinorRaisedRef.current = true;
-                setFaceOutOfFrameEvents(prev => prev + 1);
-                setFaceDirectionCounts(prev => ({ ...prev, [direction]: (prev[direction] || 0) + 1 }));
-                registerFaceViolation(`face_${direction}`, 'medium', `Face moved ${direction} for ${offFrameSecondsRef.current}s`);
-              }
-
-              if (offFrameSecondsRef.current >= BALANCED.directionLongSec && !faceOffHighRaisedRef.current) {
-                faceOffHighRaisedRef.current = true;
-                setFaceOutOfFrameEvents(prev => prev + 1);
-                setFaceDirectionCounts(prev => ({ ...prev, [direction]: (prev[direction] || 0) + 1 }));
-                registerFaceViolation(`face_${direction}_long`, 'high', `Face remained ${direction} for too long (${offFrameSecondsRef.current}s)`);
-              }
-              return;
             }
 
             setFaceTrackingState('Face aligned');
             offDirectionRef.current = null;
+            offDirectionStartedAtRef.current = 0;
             offFrameSecondsRef.current = 0;
             faceOffMinorRaisedRef.current = false;
             faceOffHighRaisedRef.current = false;
@@ -464,6 +569,7 @@ const TestEnvironment = () => {
       latestPoseRef.current = null;
       testStartAtRef.current = 0;
       lastViolationAtRef.current = {};
+      offDirectionStartedAtRef.current = 0;
       earMissingSecondsRef.current = 0;
       eyesMissingSecondsRef.current = 0;
       if (poseNetRef.current) {
