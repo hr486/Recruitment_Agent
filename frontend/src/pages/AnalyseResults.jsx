@@ -376,38 +376,6 @@ const AnalyseResults = ({ navigateTo }) => {
                     <div style={{ fontSize: '1.8rem', fontWeight: 700, color: parseFloat(cand.Score) >= 50 ? 'var(--success)' : 'var(--danger)' }}>{cand.Score}</div>
                   </div>
 
-                  {/* Violation Severity Button */}
-                  {cand.test_status && (
-                    <button
-                      onClick={async () => {
-                        if (violationDetailsCandidate?.Email === cand.Email) {
-                          setViolationDetailsCandidate(null);
-                        } else {
-                          await fetchViolationEvents(selectedJd, cand.Email, true);
-                          setViolationDetailsCandidate(cand);
-                        }
-                      }}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '12px 16px',
-                        borderRadius: '10px',
-                        border: `2px solid ${getViolationSeverity(cand.test_status, cand.Email).color}`,
-                        background: getViolationSeverity(cand.test_status, cand.Email).bgColor,
-                        color: getViolationSeverity(cand.test_status, cand.Email).color,
-                        cursor: 'pointer',
-                        fontWeight: 700,
-                        fontSize: '0.75rem',
-                        transition: 'all 0.3s',
-                        minWidth: '110px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
-                      }}>
-                        {getViolationSeverity(cand.test_status, cand.Email).level}
-                      </button>
-                  )}
                 </div>
 
                 {/* Action Buttons */}
