@@ -693,19 +693,45 @@ const TestEnvironment = () => {
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user'
+        } 
+      });
       mediaStreamRef.current = stream;
+      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch((err) => {
+          console.error('Video play error:', err);
+          setCameraError(`Video playback error: ${err.message}`);
+        });
+      } else {
+        console.warn('videoRef.current not available - stream saved, will attach when element is ready');
       }
+      
       setCameraActive(true);
       setCameraError('');
       recordProctorEvent('camera_enabled', 'info', 'Candidate granted webcam access');
     } catch (e) {
-      setCameraError('Camera access denied. Camera is required to proceed.');
+      console.error('Camera access error:', e);
+      let errorMsg = 'Camera access denied. Camera is required to proceed.';
+      
+      if (e.name === 'NotAllowedError') {
+        errorMsg = 'Camera permission denied. Please allow camera access in your browser settings.';
+      } else if (e.name === 'NotFoundError') {
+        errorMsg = 'No camera found. Please connect a webcam and try again.';
+      } else if (e.name === 'NotReadableError') {
+        errorMsg = 'Camera is in use by another application. Please close other apps using your camera.';
+      } else if (e.name === 'SecurityError') {
+        errorMsg = 'Camera access not allowed. This may require HTTPS or proper permissions.';
+      }
+      
+      setCameraError(errorMsg);
       setCameraDenied(prev => prev + 1);
-      recordProctorEvent('camera_denied', 'critical', 'Candidate denied webcam access');
+      recordProctorEvent('camera_denied', 'critical', `Camera access denied: ${e.name}`);
     }
   };
 
@@ -949,6 +975,9 @@ const TestEnvironment = () => {
 
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#0a0d14', color: '#f8fafc', padding: '20px' }}>
+        {/* Hidden video element - always available for camera stream */}
+        <video ref={videoRef} autoPlay muted playsInline style={{ display: 'none', position: 'absolute' }} />
+        
         <div style={{ background: '#111827', borderRadius: '20px', padding: '40px', maxWidth: '700px', width: '100%', border: '1px solid rgba(255,255,255,0.06)' }}>
           
           {/* Header */}
