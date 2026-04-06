@@ -66,13 +66,14 @@ const TestEnvironment = () => {
     centerXMax: 0.70,
     centerYMin: 0.25,
     centerYMax: 0.75,
-    directionPersistSec: 4,
-    faceCooldownMs: 8000,
-    graceMs: 10000,
+    directionPersistSec: 2,
+    faceCooldownMs: 5000,
+    graceMs: 5000,
     noseConfidence: 0.55,
     eyeConfidence: 0.50,
     earConfidence: 0.45,
-    earMissingViolationSec: 10,
+    earMissingViolationSec: 8,
+    directionLongSec: 5,
   };
   const [violationCount, setViolationCount] = useState(0);
   const [faceDirectionCounts, setFaceDirectionCounts] = useState({ left: 0, right: 0, up: 0, down: 0 });
@@ -428,7 +429,7 @@ const TestEnvironment = () => {
                 registerFaceViolation(`face_${direction}`, 'medium', `Face moved ${direction} for ${offFrameSecondsRef.current}s`);
               }
 
-              if (offFrameSecondsRef.current >= 8 && !faceOffHighRaisedRef.current) {
+              if (offFrameSecondsRef.current >= BALANCED.directionLongSec && !faceOffHighRaisedRef.current) {
                 faceOffHighRaisedRef.current = true;
                 setFaceOutOfFrameEvents(prev => prev + 1);
                 setFaceDirectionCounts(prev => ({ ...prev, [direction]: (prev[direction] || 0) + 1 }));
