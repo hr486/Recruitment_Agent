@@ -82,13 +82,13 @@ const TestEnvironment = () => {
   const getFaceRules = () => {
     if (isMobile) {
       return {
-        missingWarnMs: 4000,          // More lenient on mobile (shaky hands)
-        missingMajorMs: 14000,
-        lookingAwayWarnMs: 10000,     // Higher tolerance for mobile head movement
-        lookingAwayMajorMs: 15000,
+        missingWarnMs: 5000,          // Human-friendly missing-face threshold
+        missingMajorMs: 15000,
+        lookingAwayWarnMs: 6000,      // Direction minor threshold (left/right/up/down)
+        lookingAwayMajorMs: 14000,    // Direction major threshold
         centerDeadzoneX: 0.42,        // Larger deadzone - mobile faces are bigger and move more
         centerDeadzoneY: 0.42,
-        directionPersistMs: 3800,     // Slightly faster response while staying forgiving
+        directionPersistMs: 6000,     // Require sustained direction before first violation
         minFaceRatio: 0.04,           // Allow slightly smaller faces (worse lighting)
         maxFaceRatio: 0.85,           // Allow much larger faces on mobile (closer to camera)
         framePaddingX: 0.14,          // More forgiveness at frame edges
@@ -98,13 +98,13 @@ const TestEnvironment = () => {
     
     // Desktop defaults - stricter
     return {
-      missingWarnMs: 4000,
-      missingMajorMs: 12000,
-      lookingAwayWarnMs: 9000,       // Increased to reduce false positives on brief movement
-      lookingAwayMajorMs: 13000,
+      missingWarnMs: 5000,
+      missingMajorMs: 15000,
+      lookingAwayWarnMs: 6000,       // Direction minor threshold (left/right/up/down)
+      lookingAwayMajorMs: 14000,
       centerDeadzoneX: 0.38,         // More tolerance for small movement
       centerDeadzoneY: 0.38,
-      directionPersistMs: 3200,      // Slightly faster response while keeping movement tolerance
+      directionPersistMs: 6000,      // Require sustained direction before first violation
       minFaceRatio: 0.03,
       maxFaceRatio: 0.72,
       framePaddingX: 0.10,
@@ -1104,7 +1104,8 @@ const TestEnvironment = () => {
               <li><strong>Desktop/laptop is recommended</strong> for best experience; mobile/tablet and virtual camera tools are not allowed.</li>
               <li><strong>Webcam must stay on</strong>; face, eyes, and ears should remain clearly visible in the frame.</li>
               <li>Only <strong>one person</strong> is allowed in the camera view; multiple faces are flagged as critical.</li>
-              <li>Tab switch, fullscreen exit, camera block, long face-missing, and looking-away events are proctoring violations.</li>
+              <li>Natural small movement is allowed. Direction violations (left/right/up/down) are raised only if sustained for around <strong>6s</strong>; major at around <strong>14s</strong>.</li>
+              <li>Face-missing warning is raised after around <strong>5s</strong>; major face-missing at around <strong>15s</strong>.</li>
               <li>When a violation occurs, the test pauses with a warning; click <strong>OK, I Understand</strong> to continue.</li>
               <li>Violation events are recorded for HR review; final hiring decision is taken by HR.</li>
               <li>No external help, second device, copy-paste, AI tools, or unauthorized materials during the test.</li>
