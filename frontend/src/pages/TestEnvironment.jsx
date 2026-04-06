@@ -70,7 +70,7 @@ const TestEnvironment = () => {
   const VIOLATION_LIMIT = 3;
   const VIOLATION_SCORE_LIMIT = 12;
   const VIOLATION_COOLDOWN_MS = 8000;
-  const DETECTION_FPS = 5;
+  const DETECTION_FPS = 6;
   const DETECT_INTERVAL_MS = Math.floor(1000 / DETECTION_FPS);
   const GUIDE_BOX = isMobile
     ? { x: 0.05, y: 0.04, width: 0.90, height: 0.91 }
@@ -86,7 +86,7 @@ const TestEnvironment = () => {
         lookingAwayMajorMs: 15000,
         centerDeadzoneX: 0.42,        // Larger deadzone - mobile faces are bigger and move more
         centerDeadzoneY: 0.42,
-        directionPersistMs: 4500,     // Longer persistence - ignore brief movements
+        directionPersistMs: 3800,     // Slightly faster response while staying forgiving
         minFaceRatio: 0.04,           // Allow slightly smaller faces (worse lighting)
         maxFaceRatio: 0.85,           // Allow much larger faces on mobile (closer to camera)
         framePaddingX: 0.14,          // More forgiveness at frame edges
@@ -102,7 +102,7 @@ const TestEnvironment = () => {
       lookingAwayMajorMs: 13000,
       centerDeadzoneX: 0.38,         // More tolerance for small movement
       centerDeadzoneY: 0.38,
-      directionPersistMs: 4000,      // Brief movements do not trigger direction violations
+      directionPersistMs: 3200,      // Slightly faster response while keeping movement tolerance
       minFaceRatio: 0.03,
       maxFaceRatio: 0.72,
       framePaddingX: 0.10,
@@ -307,7 +307,7 @@ const TestEnvironment = () => {
   const getStableDirection = (rawDirection) => {
     const history = directionHistoryRef.current;
     history.push(rawDirection);
-    if (history.length > 10) history.shift();
+    if (history.length > 8) history.shift();
 
     const scores = history.reduce((acc, dir) => {
       acc[dir] = (acc[dir] || 0) + 1;
@@ -323,7 +323,7 @@ const TestEnvironment = () => {
       }
     });
 
-    if (bestCount < 5) return latestDirectionRef.current || 'center';
+    if (bestCount < 4) return latestDirectionRef.current || 'center';
     latestDirectionRef.current = best;
     return best;
   };
