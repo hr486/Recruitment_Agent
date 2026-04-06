@@ -247,10 +247,11 @@ const TestEnvironment = () => {
     const pitch = (noseTip.y - eyeCenterY) / eyeDistance;
     const mouthPitch = (mouthTop.y - eyeCenterY) / eyeDistance;
 
-    if (yaw <= DIRECTION_THRESHOLDS.yawLeft) return 'left';
-    if (yaw >= DIRECTION_THRESHOLDS.yawRight) return 'right';
-    if (pitch <= DIRECTION_THRESHOLDS.pitchUp) return 'up';
-    if (pitch >= DIRECTION_THRESHOLDS.pitchDown || mouthPitch >= 1.4) return 'down';
+    // Camera preview is mirrored for users in many browsers, so map directions accordingly.
+    if (yaw <= DIRECTION_THRESHOLDS.yawLeft) return 'right';
+    if (yaw >= DIRECTION_THRESHOLDS.yawRight) return 'left';
+    if (pitch <= DIRECTION_THRESHOLDS.pitchUp) return 'down';
+    if (pitch >= DIRECTION_THRESHOLDS.pitchDown || mouthPitch >= 1.4) return 'up';
     return 'center';
   };
 
@@ -258,10 +259,10 @@ const TestEnvironment = () => {
     if (!faceBox || !video?.videoWidth || !video?.videoHeight) return 'center';
     const x = faceBox.centerX / video.videoWidth;
     const y = faceBox.centerY / video.videoHeight;
-    if (x < GUIDE_BOX.x) return 'left';
-    if (x > GUIDE_BOX.x + GUIDE_BOX.width) return 'right';
-    if (y < GUIDE_BOX.y) return 'up';
-    if (y > GUIDE_BOX.y + GUIDE_BOX.height) return 'down';
+    if (x < GUIDE_BOX.x) return 'right';
+    if (x > GUIDE_BOX.x + GUIDE_BOX.width) return 'left';
+    if (y < GUIDE_BOX.y) return 'down';
+    if (y > GUIDE_BOX.y + GUIDE_BOX.height) return 'up';
     return 'center';
   };
 
@@ -964,17 +965,14 @@ const TestEnvironment = () => {
           <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
             <h3 style={{ margin: '0 0 14px', color: '#f59e0b', fontSize: '0.95rem' }}>⚠️ Rules & Regulations</h3>
             <ul style={{ margin: 0, paddingLeft: '20px', color: '#fbbf24', fontSize: '0.88rem', lineHeight: 2 }}>
-              <li>Your <strong>webcam must remain active</strong> throughout the entire test</li>
-              <li>Keep your <strong>face visible and centered</strong> throughout the test</li>
-              <li>Missing face or looking away for long duration is automatically flagged</li>
-              <li>Multiple faces in frame are treated as a <strong>major violation</strong></li>
-              <li>Tab switching will be <strong>detected and flagged</strong> — repeated switches raise violation level</li>
-              <li>The test will <strong>auto-submit</strong> when the timer reaches zero</li>
-              <li>You <strong>must use a desktop/laptop</strong> — mobiles and tablets are blocked</li>
-              <li>No external help, reference materials, or browser extensions</li>
-              <li>Do not copy-paste from outside sources</li>
-              <li>Ensure a <strong>stable internet connection</strong> before starting</li>
-              <li>Once started, you <strong>cannot pause or restart</strong> the test</li>
+              <li><strong>Desktop/laptop is recommended</strong> for best experience; mobile/tablet and virtual camera tools are not allowed.</li>
+              <li><strong>Webcam must stay on</strong>; face, eyes, and ears should remain clearly visible in the frame.</li>
+              <li>Only <strong>one person</strong> is allowed in the camera view; multiple faces are flagged as critical.</li>
+              <li>Tab switch, fullscreen exit, camera block, long face-missing, and looking-away events are proctoring violations.</li>
+              <li>When a violation occurs, the test pauses with a warning; click <strong>OK, I Understand</strong> to continue.</li>
+              <li>Violation events are recorded for HR review; final hiring decision is taken by HR.</li>
+              <li>No external help, second device, copy-paste, AI tools, or unauthorized materials during the test.</li>
+              <li>Timer based auto-submit still applies when time ends; once started, the test cannot be paused or restarted.</li>
             </ul>
           </div>
 

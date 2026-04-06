@@ -21,6 +21,7 @@ const AnalyseResults = ({ navigateTo }) => {
   const [selectedCandidateModal, setSelectedCandidateModal] = useState(null);
   const [violationDetailsCandidate, setViolationDetailsCandidate] = useState(null);
   const [violationEventsMap, setViolationEventsMap] = useState({});
+  const [violationSeverityMap, setViolationSeverityMap] = useState({});
   const [loadingViolations, setLoadingViolations] = useState({});
 
   const getStatusLabel = (statusValue) => {
@@ -29,21 +30,40 @@ const AnalyseResults = ({ navigateTo }) => {
     return raw.split('|')[0].trim();
   };
 
-  const fetchViolationEvents = async (jdId, email) => {
+  const getHighestSeverityFromEvents = (events = []) => {
+    const rank = { info: 1, warning: 2, medium: 2, high: 3, critical: 4 };
+    let best = 'info';
+    let bestRank = 0;
+    (events || []).forEach((e) => {
+      const sev = String(e?.severity || 'info').toLowerCase();
+      const r = rank[sev] || 0;
+      if (r > bestRank) {
+        bestRank = r;
+        best = sev;
+      }
+    });
+    return best;
+  };
+
+  const fetchViolationEvents = async (jdId, email, force = false) => {
     const emailKey = String(email || '').trim().toLowerCase();
     if (!emailKey) return;
-    if (violationEventsMap[emailKey]) return;
+    if (!force && violationEventsMap[emailKey]) return;
 
     setLoadingViolations(prev => ({ ...prev, [emailKey]: true }));
     try {
       const safeJdId = encodeURIComponent(String(jdId || ''));
       const safeEmail = encodeURIComponent(emailKey);
-      const res = await fetch(`${apiBase}/test/proctoring/${safeJdId}/${safeEmail}`);
+      const res = await fetch(`${apiBase}/test/proctoring/${safeJdId}/${safeEmail}?t=${Date.now()}`);
       const data = await res.json();
-      setViolationEventsMap(prev => ({ ...prev, [emailKey]: data.events || [] }));
+      const events = data.events || [];
+      const highest = String(data.highest_severity || getHighestSeverityFromEvents(events) || 'info').toLowerCase();
+      setViolationEventsMap(prev => ({ ...prev, [emailKey]: events }));
+      setViolationSeverityMap(prev => ({ ...prev, [emailKey]: highest }));
     } catch (err) {
       console.error('Error fetching violation events:', err);
       setViolationEventsMap(prev => ({ ...prev, [emailKey]: [] }));
+      setViolationSeverityMap(prev => ({ ...prev, [emailKey]: 'info' }));
     } finally {
       setLoadingViolations(prev => ({ ...prev, [emailKey]: false }));
     }
@@ -97,7 +117,14 @@ const AnalyseResults = ({ navigateTo }) => {
     return metrics;
   };
 
-  const getViolationSeverity = (statusValue) => {
+  const getViolationSeverity = (statusValue, email) => {
+    const emailKey = String(email || '').trim().toLowerCase();
+    const apiSeverity = String(violationSeverityMap[emailKey] || '').toLowerCase();
+    if (apiSeverity === 'critical') return { level: 'MAJOR', color: '#ef4444', bgColor: 'rgba(239,68,68,0.1)' };
+    if (apiSeverity === 'high') return { level: 'SUSPICIOUS', color: '#f59e0b', bgColor: 'rgba(245,158,11,0.1)' };
+    if (apiSeverity === 'medium' || apiSeverity === 'warning') return { level: 'MINOR', color: '#f59e0b', bgColor: 'rgba(245,158,11,0.1)' };
+    if (apiSeverity === 'info') return { level: 'NORMAL', color: '#10b981', bgColor: 'rgba(16,185,129,0.1)' };
+
     const label = getStatusLabel(statusValue || '').toLowerCase();
     if (label === 'major violation') return { level: 'MAJOR', color: '#ef4444', bgColor: 'rgba(239,68,68,0.1)' };
     if (label === 'suspicious') return { level: 'SUSPICIOUS', color: '#f59e0b', bgColor: 'rgba(245,158,11,0.1)' };
@@ -342,7 +369,7 @@ const AnalyseResults = ({ navigateTo }) => {
                         if (violationDetailsCandidate?.Email === cand.Email) {
                           setViolationDetailsCandidate(null);
                         } else {
-                          await fetchViolationEvents(selectedJd, cand.Email);
+                          await fetchViolationEvents(selectedJd, cand.Email, true);
                           setViolationDetailsCandidate(cand);
                         }
                       }}
@@ -353,9 +380,9 @@ const AnalyseResults = ({ navigateTo }) => {
                         justifyContent: 'center',
                         padding: '12px 16px',
                         borderRadius: '10px',
-                        border: `2px solid ${getViolationSeverity(cand.test_status).color}`,
-                        background: getViolationSeverity(cand.test_status).bgColor,
-                        color: getViolationSeverity(cand.test_status).color,
+                        border: `2px solid ${getViolationSeverity(cand.test_status, cand.Email).color}`,
+                        background: getViolationSeverity(cand.test_status, cand.Email).bgColor,
+                        color: getViolationSeverity(cand.test_status, cand.Email).color,
                         cursor: 'pointer',
                         fontWeight: 700,
                         fontSize: '0.75rem',
@@ -364,7 +391,7 @@ const AnalyseResults = ({ navigateTo }) => {
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em'
                       }}>
-                        {getViolationSeverity(cand.test_status).level}
+                        {getViolationSeverity(cand.test_status, cand.Email).level}
                       </button>
                   )}
                 </div>
@@ -416,11 +443,11 @@ const AnalyseResults = ({ navigateTo }) => {
                       No violation events recorded.
                     </div>
                   )}
-                  <div style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: '8px', border: `2px solid ${getViolationSeverity(cand.test_status).color}`, marginBottom: '16px' }}>
+                  <div style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: '8px', border: `2px solid ${getViolationSeverity(cand.test_status, cand.Email).color}`, marginBottom: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                       <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Severity Level</span>
-                      <span style={{ fontSize: '1rem', fontWeight: 700, color: getViolationSeverity(cand.test_status).color, textTransform: 'uppercase' }}>
-                        {getViolationSeverity(cand.test_status).level}
+                      <span style={{ fontSize: '1rem', fontWeight: 700, color: getViolationSeverity(cand.test_status, cand.Email).color, textTransform: 'uppercase' }}>
+                        {getViolationSeverity(cand.test_status, cand.Email).level}
                       </span>
                     </div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
