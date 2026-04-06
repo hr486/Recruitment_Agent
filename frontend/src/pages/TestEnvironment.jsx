@@ -41,6 +41,8 @@ const TestEnvironment = () => {
   const missingSinceRef = useRef(0);
   const offFrameSinceRef = useRef(0);
   const offDirectionSinceRef = useRef(0);
+  const eyesMissingSinceRef = useRef(0);
+  const earsMissingSinceRef = useRef(0);
   const multiFaceActiveRef = useRef(false);
   const faceMissingMinorRaisedRef = useRef(false);
   const faceMissingMajorRaisedRef = useRef(false);
@@ -76,6 +78,9 @@ const TestEnvironment = () => {
     missingMajorMs: 10000,
     lookingAwayWarnMs: 4500,
     lookingAwayMajorMs: 10000,
+    centerDeadzoneX: 0.18,
+    centerDeadzoneY: 0.18,
+    directionPersistMs: 1400,
     minFaceRatio: 0.03,
     maxFaceRatio: 0.72,
     framePaddingX: 0.08,
@@ -259,12 +264,19 @@ const TestEnvironment = () => {
     if (!faceBox || !video?.videoWidth || !video?.videoHeight) return 'center';
     const x = faceBox.centerX / video.videoWidth;
     const y = faceBox.centerY / video.videoHeight;
-    if (x < GUIDE_BOX.x) return 'right';
-    if (x > GUIDE_BOX.x + GUIDE_BOX.width) return 'left';
-    if (y < GUIDE_BOX.y) return 'down';
-    if (y > GUIDE_BOX.y + GUIDE_BOX.height) return 'up';
+    if (x < GUIDE_BOX.x + FACE_RULES.centerDeadzoneX) return 'right';
+    if (x > GUIDE_BOX.x + GUIDE_BOX.width - FACE_RULES.centerDeadzoneX) return 'left';
+    if (y < GUIDE_BOX.y + FACE_RULES.centerDeadzoneY) return 'down';
+    if (y > GUIDE_BOX.y + GUIDE_BOX.height - FACE_RULES.centerDeadzoneY) return 'up';
     return 'center';
   };
+
+  useEffect(() => {
+    if (phase !== 'test') {
+      eyesMissingSinceRef.current = 0;
+      earsMissingSinceRef.current = 0;
+    }
+  }, [phase]);
 
   const getStableDirection = (rawDirection) => {
     const history = directionHistoryRef.current;
@@ -544,8 +556,27 @@ const TestEnvironment = () => {
       const eyesVisible = !!(leftEye && rightEye);
       const earsVisible = !!(leftEar && rightEar);
 
-      if (!eyesVisible) registerViolation('eyes_not_visible', 'medium', 'Eyes are not both visible');
-      if (!earsVisible) registerViolation('ears_not_visible', 'medium', 'Ears are not both visible');
+      if (!eyesVisible) {
+        if (!eyesMissingSinceRef.current) eyesMissingSinceRef.current = Date.now();
+        const eyesMissingMs = Date.now() - eyesMissingSinceRef.current;
+        if (eyesMissingMs >= 2500) {
+          registerViolation('eyes_not_visible', 'medium', 'Eyes are not both visible');
+          eyesMissingSinceRef.current = Date.now();
+        }
+      } else {
+        eyesMissingSinceRef.current = 0;
+      }
+
+      if (!earsVisible) {
+        if (!earsMissingSinceRef.current) earsMissingSinceRef.current = Date.now();
+        const earsMissingMs = Date.now() - earsMissingSinceRef.current;
+        if (earsMissingMs >= 4000) {
+          registerViolation('ears_not_visible', 'medium', 'Ears are not both visible');
+          earsMissingSinceRef.current = Date.now();
+        }
+      } else {
+        earsMissingSinceRef.current = 0;
+      }
 
       if (!insideGuide || (direction !== 'center' && direction !== 'unknown')) {
         const movementDirection = direction === 'unknown'
@@ -569,7 +600,7 @@ const TestEnvironment = () => {
           statusColor: '#f59e0b',
         });
 
-        if (awayMs >= FACE_RULES.lookingAwayWarnMs && !faceOffMinorRaisedRef.current) {
+        if (awayMs >= FACE_RULES.directionPersistMs && !faceOffMinorRaisedRef.current) {
           faceOffMinorRaisedRef.current = true;
           setFaceOutOfFrameEvents(prev => prev + 1);
           setFaceDirectionCounts(prev => ({ ...prev, [movementDirection]: (prev[movementDirection] || 0) + 1 }));
