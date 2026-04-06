@@ -785,7 +785,30 @@ const TestEnvironment = () => {
       return;
     }
 
-    await startCamera();
+    // Set phase first to render the visible video element in test UI
+    setPhase('test');
+    
+    // Small delay to ensure React renders the video element before attaching stream
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Now attach the camera stream to the visible video element
+    if (videoRef.current && mediaStreamRef.current) {
+      try {
+        videoRef.current.srcObject = mediaStreamRef.current;
+        videoRef.current.play().catch((err) => {
+          console.error('Video play error after attaching stream:', err);
+          setCameraError(`Could not play video: ${err.message}`);
+        });
+      } catch (err) {
+        console.error('Error attaching stream:', err);
+        setCameraError('Failed to attach camera stream');
+      }
+    }
+    
+    // If stream not already available, request camera now
+    if (!mediaStreamRef.current) {
+      await startCamera();
+    }
     try {
       if (document.documentElement.requestFullscreen) {
         await document.documentElement.requestFullscreen();
@@ -998,9 +1021,6 @@ const TestEnvironment = () => {
 
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#0a0d14', color: '#f8fafc', padding: '20px' }}>
-        {/* Hidden video element - always available for camera stream */}
-        <video ref={videoRef} autoPlay muted playsInline style={{ display: 'none', position: 'absolute' }} />
-        
         <div style={{ background: '#111827', borderRadius: '20px', padding: '40px', maxWidth: '700px', width: '100%', border: '1px solid rgba(255,255,255,0.06)' }}>
           
           {/* Header */}
