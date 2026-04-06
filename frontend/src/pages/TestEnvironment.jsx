@@ -72,7 +72,9 @@ const TestEnvironment = () => {
   const VIOLATION_COOLDOWN_MS = 5000;
   const DETECTION_FPS = 8;
   const DETECT_INTERVAL_MS = Math.floor(1000 / DETECTION_FPS);
-  const GUIDE_BOX = { x: 0.26, y: 0.20, width: 0.48, height: 0.58 };
+  const GUIDE_BOX = isMobile
+    ? { x: 0.14, y: 0.10, width: 0.72, height: 0.80 }
+    : { x: 0.18, y: 0.13, width: 0.64, height: 0.74 };
   
   // Mobile-specific and desktop face tracking rules
   const getFaceRules = () => {
