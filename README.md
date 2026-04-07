@@ -32,6 +32,11 @@ RecruitAI is segmented into sequential stages:
 
 ---
 
+## 🌐 Live Deployments
+
+- **Frontend:** [recruitagent.onrender.com](https://recruitagent.onrender.com) — React + Vite frontend deployed on Render
+- **Backend:** [Botivate2026/recruitai-backend](https://huggingface.co/spaces/Botivate2026/recruitai-backend) — FastAPI backend deployed on Hugging Face Spaces
+
 ## 📚 Documentation & Setup Guides
 
 Instead of a monolithic README, we have split critical configuration and deployment steps into clear markdown guides:
@@ -44,6 +49,16 @@ Instead of a monolithic README, we have split critical configuration and deploym
 2. **[Deployment Guide](docs/2_Deployment_Guide.md)**:
    - Learn how to deploy the FastAPI backend utilizing Docker onto **Hugging Face Spaces**.
    - Instructions on scaling the React frontend across **Render.com** (including SPA rewrite fixes).
+
+## 🔋 Technology Stack
+
+| Component | Technology | Deployment |
+|-----------|-----------|-----------|
+| **Frontend** | React 19, Vite 5, Lucide React Icons | Render (Static Site) |
+| **Backend** | FastAPI (Python 3.10+), Docker | Hugging Face Spaces |
+| **AI/ML** | Google Gemini API, MediaPipe Face Landmarker | -  |
+| **Database** | Google Sheets (serverless) | Google Cloud |
+| **Authentication** | Google Service Account JSON | -  |
 
 ---
 *Built with ❤️ by AI for streamlined human operations.*
