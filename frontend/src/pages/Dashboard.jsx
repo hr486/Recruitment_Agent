@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Users, FileCheck, Target, TrendingUp, RefreshCw } from 'lucide-react';
 import { sortJdsNewestFirst, formatCreatedTimestamp } from '../utils/jdDropdown';
 
@@ -28,6 +29,17 @@ const Dashboard = ({ navigateTo }) => {
     const interval = setInterval(fetchJds, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!selectedJdModal) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [selectedJdModal]);
 
   const totalCandidates = jds.reduce((sum, jd) => sum + jd.candidate_count, 0);
   const totalShortlisted = jds.reduce((sum, jd) => sum + jd.shortlisted_count, 0);
@@ -138,10 +150,42 @@ const Dashboard = ({ navigateTo }) => {
       </div>
 
       {/* JD Detailed Modal Overlay */}
-      {selectedJdModal && (
-        <div className="modal-outer dashboard-jd-modal-outer" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 'clamp(10px, 2vw, 24px)', overflowY: 'auto' }}>
-          <div className="card animate-fade-in modal-container dashboard-jd-modal" style={{ width: 'min(100%, 920px)', maxHeight: 'min(92vh, 900px)', overflowY: 'auto', background: 'var(--bg-dark)', border: '1px solid var(--border-light)', padding: '30px', transform: 'none' }}>
-            <div className="dashboard-jd-modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-light)', paddingBottom: '20px', marginBottom: '20px', gap: '12px' }}>
+      {selectedJdModal && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            width: '100vw',
+            height: '100dvh',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+            background: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(5px)',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch'
+          }}
+          onClick={() => setSelectedJdModal(null)}
+        >
+          <div
+            className="card animate-fade-in"
+            style={{
+              width: 'min(760px, 100%)',
+              maxHeight: 'calc(100dvh - 32px)',
+              overflowY: 'auto',
+              background: 'var(--bg-dark)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '16px',
+              padding: 'clamp(14px, 2.5vw, 30px)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-light)', paddingBottom: '20px', marginBottom: '20px' }}>
               <div>
                 <h2 style={{ fontSize: '1.8rem', margin: '0 0 5px', color: 'var(--text-main)' }}>{selectedJdModal.title}</h2>
                 <p style={{ margin: 0, color: 'var(--text-muted)' }}>Campaign ID: {selectedJdModal.jd_id} • {selectedJdModal.company}</p>
@@ -249,7 +293,7 @@ const Dashboard = ({ navigateTo }) => {
                ) : selectedJdModal.state === 'INTERVIEW_SCHEDULED' ? (
                   <>
                     <p style={{ color: 'var(--text-main)', marginBottom: '15px' }}>Interviews scheduled. Conduct interviews and record hiring decisions.</p>
-                    <div className="dashboard-jd-modal-actions" style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ display: 'flex', gap: '10px' }}>
                       <button className="btn btn-primary" onClick={() => { setSelectedJdModal(null); if(navigateTo) navigateTo('interviews'); }} style={{ flex: 2, background: 'var(--success)' }}>Manage Interviews</button>
                       <button className="btn btn-outline" onClick={async () => {
                          if(window.confirm("Close this campaign without hiring?")) {
@@ -281,7 +325,8 @@ const Dashboard = ({ navigateTo }) => {
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>

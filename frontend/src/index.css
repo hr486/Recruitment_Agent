@@ -465,6 +465,28 @@ a:hover { color: var(--accent); }
   transform: translate(30%, -30%);
 }
 
+.dashboard-jd-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+}
+
+.dashboard-jd-modal-card {
+  width: min(100%, 700px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-light);
+  padding: 30px;
+}
+
 /* Loader */
 .spinner {
   width: 24px;
@@ -537,6 +559,17 @@ a:hover { color: var(--accent); }
 /* ── Tablet Portrait: 768px ── */
 @media (max-width: 768px) {
   :root { --sidebar-w: 0px; }
+
+  .dashboard-jd-modal-overlay {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .dashboard-jd-modal-card {
+    width: 100%;
+    max-height: calc(100dvh - 24px);
+    padding: 20px 16px;
+  }
 
   /* Modal responsive adjustments */
   .modal-outer { padding: 12px; }
@@ -674,6 +707,15 @@ a:hover { color: var(--accent); }
 
 /* ── Mobile (480px and below) ── */
 @media (max-width: 480px) {
+  .dashboard-jd-modal-overlay {
+    padding: 10px;
+  }
+
+  .dashboard-jd-modal-card {
+    max-height: calc(100dvh - 20px);
+    padding: 16px 12px;
+  }
+
   /* Mobile modal styles */
   .modal-header {
     padding: 12px 16px !important;
@@ -854,60 +896,6 @@ a:hover { color: var(--accent); }
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/* Dashboard JD details modal */
-.dashboard-jd-modal-outer {
-  overscroll-behavior: contain;
-}
-
-.dashboard-jd-modal {
-  margin: auto;
-  scrollbar-gutter: stable;
-}
-
-@media (max-width: 768px) {
-  .dashboard-jd-modal-outer {
-    align-items: flex-end !important;
-    padding: 0 !important;
-  }
-
-  .dashboard-jd-modal {
-    width: 100% !important;
-    max-width: 100% !important;
-    max-height: 95dvh !important;
-    border-radius: 14px 14px 0 0;
-    border-left: none !important;
-    border-right: none !important;
-    border-bottom: none !important;
-    padding: 18px 14px 22px !important;
-  }
-
-  .dashboard-jd-modal-header {
-    flex-direction: column;
-    align-items: flex-start !important;
-  }
-
-  .dashboard-jd-modal-actions {
-    flex-direction: column;
-  }
-
-  .dashboard-jd-modal-actions .btn {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .dashboard-jd-modal {
-    max-height: 100dvh !important;
-    border-radius: 0;
-    padding: 14px 12px 18px !important;
-  }
-
-  .dashboard-jd-modal-header h2 {
-    font-size: 1.25rem !important;
-    line-height: 1.35;
-  }
 }
 
 /* Responsive modal — used by CandidateProfileModal */
