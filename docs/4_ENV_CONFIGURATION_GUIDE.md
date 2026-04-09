@@ -9,6 +9,7 @@ The `.env` file contains all sensitive credentials and configuration for your re
 ## 📍 File Location
 
 Place `.env` in this directory:
+
 ```
 hiring_system_v2/backend/.env
 ```
@@ -24,6 +25,7 @@ OPENAI_API_KEY=sk-proj-U8lcJm38Z2hAtvR403MuYaAzRJwqtH2F0kDOd0S0HERhloqdKtTRjtGJY
 ```
 
 **How to get:**
+
 1. Go to [platform.openai.com](https://platform.openai.com)
 2. Click **API keys** (left sidebar)
 3. Click **"Create new secret key"**
@@ -40,6 +42,7 @@ GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxx
 ```
 
 **How to get:**
+
 1. Go to [console.groq.com](https://console.groq.com)
 2. Sign in and create account
 3. Go to **API Keys**
@@ -57,6 +60,7 @@ HUGGINGFACE_API_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxx
 ```
 
 **How to get:**
+
 1. Go to [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
 2. Click **"New token"**
 3. Type: "Read"
@@ -76,6 +80,7 @@ BASE_URL=http://localhost:8000
 **For Local Testing:** Use as-is
 
 **For Hugging Face Space:** Change to:
+
 ```env
 BASE_URL=https://[your-username]-[your-space-name].hf.space
 ```
@@ -118,10 +123,12 @@ GOOGLE_DRIVE_FOLDER_ID=0AK5eLMIMUwQMUk9PVA
 **How to get:**
 
 **Spreadsheet ID:**
+
 1. Open your Google Sheet
 2. Copy from URL: `https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit`
 
 **Drive Folder ID:**
+
 1. Open your Google Drive Folder
 2. Copy from URL: `https://drive.google.com/drive/folders/[FOLDER_ID]`
 
@@ -177,6 +184,7 @@ WHATSAPP_WEBHOOK_VERIFY_TOKEN=RecruitAI_WA_Verify_2026_4f9cA72dPqL8xM3v
 **Setup:** See [3_WHATSAPP_INTEGRATION_GUIDE.md](3_WHATSAPP_INTEGRATION_GUIDE.md)
 
 **Critical Notes:**
+
 - `WHATSAPP_TEMPLATE_LANG=en` (NOT `en_US`)
 - `WHATSAPP_ACCESS_TOKEN` must be system user token (not temporary)
 - Token should never expire
@@ -201,8 +209,8 @@ SMTP_PASSWORD=xxxxxxxxxxxx
 # Google
 GOOGLE_SPREADSHEET_ID=1lcGSx_om7lU-FvV6Fm-uh6HVzbrbGonsu1_FD4LfdUo
 GOOGLE_DRIVE_FOLDER_ID=0AK5eLMIMUwQMUk9PVA
-SERVICE_ACCOUNT_FILE=hiring_system_v2/backend/service_account.json
-GMAIL_CLIENT_SECRET_FILE=hiring_system_v2/backend/client_secret.json
+SERVICE_ACCOUNT_FILE=service_account.json
+GMAIL_CLIENT_SECRET=client_secret.json
 
 # Server
 PORT=8000
@@ -233,12 +241,14 @@ HUGGINGFACE_API_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxx
 ## 🔄 Local vs Cloud Configuration
 
 ### Local Development
+
 ```env
 BASE_URL=http://localhost:8000
 WHATSAPP_WEBHOOK_VERIFY_TOKEN=RecruitAI_WA_Verify_2026_4f9cA72dPqL8xM3v
 ```
 
 ### Hugging Face Space
+
 ```env
 BASE_URL=https://[your-username]-recruitai-backend.hf.space
 WHATSAPP_WEBHOOK_VERIFY_TOKEN=RecruitAI_WA_Verify_2026_4f9cA72dPqL8xM3v
@@ -272,6 +282,7 @@ print('✅ All required vars configured!')
 ```
 
 Expected output:
+
 ```
 ✅ OpenAI Key: SET
 ✅ Gmail User: team.ai@botivate.in
@@ -285,6 +296,7 @@ Expected output:
 ## 🔐 Security Best Practices
 
 1. **Never commit `.env` to Git**
+
    ```bash
    # Add to .gitignore
    echo ".env
@@ -292,23 +304,23 @@ Expected output:
    client_secret.json
    service_account.json" >> .gitignore
    ```
-
 2. **Protect API Keys**
+
    - Store in `.env` (local development)
    - Use environment variables (production)
    - For HF Space: Use **Secrets** feature
-
 3. **For Hugging Face Space**
+
    - Go to Space Settings → Secrets
    - Add each variable as a secret (NOT in Dockerfile)
    - HF automatically injects as env variables
-
 4. **Rotate Credentials Periodically**
+
    - Generate new OpenAI keys
    - Regenerate WhatsApp tokens
    - Update service account keys
-
 5. **Minimum Permissions**
+
    - Service account: Editor on Drive/Sheets only
    - WhatsApp token: Only necessary permissions
    - Gmail: Only Mail + Drive scopes
@@ -318,21 +330,25 @@ Expected output:
 ## 🚨 Common Errors & Fixes
 
 ### Error: "OPENAI_API_KEY not found"
+
 - Check `.env` file exists
 - Verify key is not empty
 - Ensure no extra quotes
 
 ### Error: "service_account.json not found"
+
 - Download from Google Cloud Console
 - Place in `hiring_system_v2/backend/`
 - Check file path in `.env`
 
 ### Error: "SMTP authentication failed"
+
 - Verify Gmail address is correct
 - Regenerate app password (2-FA must be on)
 - Don't use spaces in password
 
 ### Error: "WhatsApp credentials missing"
+
 - Set `WHATSAPP_ENABLED=true`
 - Fill all 8 WhatsApp variables
 - Restart backend after updating
@@ -340,6 +356,7 @@ Expected output:
 ---
 
 **Next Steps:**
+
 - Local setup: See [1_Setup_and_Configuration.md](1_Setup_and_Configuration.md)
 - Cloud deployment: See [2_Deployment_Guide.md](2_Deployment_Guide.md)
 - WhatsApp setup: See [3_WHATSAPP_INTEGRATION_GUIDE.md](3_WHATSAPP_INTEGRATION_GUIDE.md)
